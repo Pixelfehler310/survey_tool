@@ -18,7 +18,7 @@
 | Komponente | Technologie                    | Begründung                       |
 | ---------- | ------------------------------ | -------------------------------- |
 | Framework  | **React + Vite**               | Schnelle Entwicklung, Hot Reload |
-| Styling    | **Vanilla CSS** oder Tailwind  | Flexibel, keine Abhängigkeiten   |
+| Styling    | **Tailwind**                   | Flexibel, keine Abhängigkeiten   |
 | State      | **React Context** oder Zustand | Einfaches State Management       |
 | Build      | **Vite**                       | Schnell, modernes Bundling       |
 

@@ -1,0 +1,159 @@
+import hashlib
+from datetime import datetime
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..database import get_db
+from ..models.response import Response
+from ..schemas.response import ResponseCreate, ResponsePartialUpdate, ResponseOut
+
+router = APIRouter(tags=["responses"])
+
+
+def hash_fingerprint(fingerprint: str) -> str:
+    """Hash a fingerprint for privacy."""
+    return hashlib.sha256(fingerprint.encode()).hexdigest()
+
+
+def extract_client_meta(request: Request, meta: dict) -> dict:
+    """Extract metadata from request headers."""
+    enriched_meta = meta.copy() if meta else {}
+    
+    # Add user agent
+    user_agent = request.headers.get("user-agent", "")
+    if user_agent:
+        enriched_meta["user_agent"] = user_agent[:500]  # Limit length
+    
+    # Add source from query params if provided
+    source = request.query_params.get("source")
+    if source:
+        enriched_meta["source"] = source
+    
+    # Add IP hash for analytics (privacy-preserving)
+    client_ip = request.client.host if request.client else None
+    if client_ip:
+        enriched_meta["ip_hash"] = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+    
+    return enriched_meta
+
+
+@router.post("/responses", response_model=ResponseOut, status_code=status.HTTP_201_CREATED)
+async def create_response(
+    response_data: ResponseCreate,
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Submit a completed survey response.
+    
+    - Stores answers and metadata
+    - Supports duplicate prevention via fingerprint
+    - Captures client metadata (user-agent, source, IP hash)
+    """
+    # Check for duplicate if fingerprint provided
+    if response_data.fingerprint:
+        fingerprint_hash = hash_fingerprint(response_data.fingerprint)
+        existing = await db.execute(
+            select(Response).where(
+                Response.survey_id == response_data.survey_id,
+                Response.fingerprint_hash == fingerprint_hash
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Response already submitted from this device"
+            )
+    else:
+        fingerprint_hash = None
+    
+    # Enrich metadata with request info
+    enriched_meta = extract_client_meta(request, response_data.meta or {})
+    
+    # Create response
+    db_response = Response(
+        survey_id=response_data.survey_id,
+        answers=response_data.answers,
+        meta=enriched_meta,
+        fingerprint_hash=fingerprint_hash,
+        started_at=response_data.started_at,
+        completed_at=datetime.utcnow(),
+    )
+    
+    db.add(db_response)
+    await db.flush()
+    await db.refresh(db_response)
+    
+    return db_response
+
+
+@router.post("/responses/{response_id}/partial", response_model=ResponseOut)
+async def update_partial_response(
+    response_id: str,
+    update_data: ResponsePartialUpdate,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update a partial response (save-and-continue functionality).
+    
+    Allows updating answers before final submission.
+    """
+    result = await db.execute(
+        select(Response).where(Response.id == response_id)
+    )
+    db_response = result.scalar_one_or_none()
+    
+    if not db_response:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Response not found"
+        )
+    
+    # Only allow updates if not completed
+    if db_response.completed_at:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot update a completed response"
+        )
+    
+    # Update answers (merge with existing)
+    current_answers = db_response.answers or {}
+    current_answers.update(update_data.answers)
+    db_response.answers = current_answers
+    
+    # Update meta if provided
+    if update_data.meta:
+        current_meta = db_response.meta or {}
+        current_meta.update(update_data.meta)
+        db_response.meta = current_meta
+    
+    await db.flush()
+    await db.refresh(db_response)
+    
+    return db_response
+
+
+@router.get("/responses/{response_id}", response_model=ResponseOut)
+async def get_response(
+    response_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get a single response by ID.
+    
+    Useful for resuming a partial response.
+    """
+    result = await db.execute(
+        select(Response).where(Response.id == response_id)
+    )
+    db_response = result.scalar_one_or_none()
+    
+    if not db_response:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Response not found"
+        )
+    
+    return db_response
