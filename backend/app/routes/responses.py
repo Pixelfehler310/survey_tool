@@ -82,8 +82,13 @@ async def create_response(
                 detail="CAPTCHA verification failed"
             )
     
-    # Check for duplicate if fingerprint provided
-    if response_data.fingerprint:
+    # Load survey definition to check settings
+    survey_def = load_survey_definition(response_data.survey_id)
+    allow_multiple = survey_def.get("settings", {}).get("allow_multiple_responses", False) if survey_def else False
+    
+    # Check for duplicate if fingerprint provided AND multiple responses not allowed
+    fingerprint_hash = None
+    if response_data.fingerprint and not allow_multiple:
         fingerprint_hash = hash_fingerprint(response_data.fingerprint)
         existing = await db.execute(
             select(Response).where(
@@ -96,8 +101,6 @@ async def create_response(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Response already submitted from this device"
             )
-    else:
-        fingerprint_hash = None
     
     # Enrich metadata with request info
     enriched_meta = extract_client_meta(request, response_data.meta or {})
@@ -117,8 +120,7 @@ async def create_response(
     await db.flush()
     await db.refresh(db_response)
     
-    # Trigger webhooks (async, fire-and-forget)
-    survey_def = load_survey_definition(response_data.survey_id)
+    # Trigger webhooks (async, fire-and-forget) - reuse survey_def from above
     if survey_def:
         await trigger_webhooks(
             survey_def,

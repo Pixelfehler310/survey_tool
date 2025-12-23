@@ -83,6 +83,15 @@ class SurveySettings(BaseModel):
     allow_back: bool = True
     show_progress: bool = True
     submit_redirect: Optional[str] = None
+    captcha: bool = False  # Enable/disable Turnstile
+    allow_multiple_responses: bool = False  # Allow multiple responses from same device
+
+
+class SurveyBranding(BaseModel):
+    """Visual branding configuration."""
+    logo_url: Optional[str] = None
+    primary_color: Optional[str] = None
+    font_family: Optional[str] = None
 
 
 class SurveyDefinition(BaseModel):
@@ -91,6 +100,7 @@ class SurveyDefinition(BaseModel):
     title: str
     version: str = "1.0.0"
     settings: SurveySettings = Field(default_factory=SurveySettings)
+    branding: Optional[SurveyBranding] = None
     questions: List[SurveyQuestion]
 
 

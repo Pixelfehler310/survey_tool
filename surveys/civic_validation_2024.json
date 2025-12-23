@@ -5,7 +5,13 @@
   "settings": {
     "allow_back": true,
     "show_progress": true,
+    "captcha": true,
     "submit_redirect": "/thank-you"
+  },
+  "branding": {
+    "primary_color": "#4f46e5",
+    "font_family": "Inter",
+    "logo_url": "https://raw.githubusercontent.com/Pixelfehler310/survey_tool/main/logo.png"
   },
   "questions": [
     {
@@ -14,8 +20,14 @@
       "phase": "screening",
       "text": "Bist du aktuell Student:in?",
       "options": [
-        { "value": "yes", "label": "Ja" },
-        { "value": "no", "label": "Nein" }
+        {
+          "value": "yes",
+          "label": "Ja"
+        },
+        {
+          "value": "no",
+          "label": "Nein"
+        }
       ],
       "required": true
     },
@@ -38,9 +50,18 @@
       "phase": "marketing",
       "text": "Würdest du 5€/Monat zahlen, um nie wieder alleine zu essen?",
       "options": [
-        { "value": "yes", "label": "Ja, definitiv" },
-        { "value": "maybe", "label": "Vielleicht" },
-        { "value": "no", "label": "Nein" }
+        {
+          "value": "yes",
+          "label": "Ja, definitiv"
+        },
+        {
+          "value": "maybe",
+          "label": "Vielleicht"
+        },
+        {
+          "value": "no",
+          "label": "Nein"
+        }
       ],
       "show_if": "answers.loneliness_freq >= 3"
     },
@@ -50,10 +71,22 @@
       "phase": "demographics",
       "text": "Welcher Altersgruppe gehörst du an?",
       "options": [
-        { "value": "18-24", "label": "18-24 Jahre" },
-        { "value": "25-34", "label": "25-34 Jahre" },
-        { "value": "35-44", "label": "35-44 Jahre" },
-        { "value": "45+", "label": "45+ Jahre" }
+        {
+          "value": "18-24",
+          "label": "18-24 Jahre"
+        },
+        {
+          "value": "25-34",
+          "label": "25-34 Jahre"
+        },
+        {
+          "value": "35-44",
+          "label": "35-44 Jahre"
+        },
+        {
+          "value": "45+",
+          "label": "45+ Jahre"
+        }
       ],
       "required": true
     },

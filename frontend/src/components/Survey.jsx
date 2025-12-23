@@ -5,6 +5,7 @@ import { loadSurvey, submitResponse, generateFingerprint } from "../lib/surveyEn
 import Question from "./Question";
 import ProgressBar from "./ProgressBar";
 import ThemeToggle from "./ThemeToggle";
+import Turnstile from "./Turnstile";
 import useBranding from "../hooks/useBranding";
 
 export default function Survey() {
@@ -12,6 +13,7 @@ export default function Survey() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState(null);
 
   const {
     survey,
@@ -84,6 +86,11 @@ export default function Survey() {
 
       // Add fingerprint for duplicate prevention
       data.fingerprint = generateFingerprint();
+
+      // Add Turnstile token if available
+      if (turnstileToken) {
+        data.turnstile_token = turnstileToken;
+      }
 
       await submitResponse(data);
       setIsSubmitted(true);
@@ -216,6 +223,7 @@ export default function Survey() {
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div className="flex-1 mr-4">
+            {survey.branding?.logo_url && <img src={survey.branding.logo_url} alt="Logo" className="h-12 w-auto mb-6 object-contain" onError={(e) => (e.target.style.display = "none")} />}
             <h1 className="text-2xl md:text-3xl font-bold mb-4">{survey.title}</h1>
             {showProgress && <ProgressBar progress={progress} />}
           </div>
@@ -225,7 +233,16 @@ export default function Survey() {
         {/* Question card */}
         <div className="card mb-6 md:p-8">
           {currentQuestion ? (
-            <Question question={currentQuestion} value={currentAnswer} onChange={(value) => setAnswer(currentQuestion.id, value)} error={validationError} />
+            <>
+              <Question question={currentQuestion} value={currentAnswer} onChange={(value) => setAnswer(currentQuestion.id, value)} error={validationError} />
+
+              {isLastQuestion() && survey.settings?.captcha && (
+                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                  <p className="text-sm text-center text-slate-500 mb-4 font-medium">Bitte verifiziere, dass du ein Mensch bist:</p>
+                  <Turnstile onVerify={setTurnstileToken} />
+                </div>
+              )}
+            </>
           ) : (
             <p className="text-slate-500 dark:text-slate-400">Keine Fragen verfügbar.</p>
           )}
@@ -247,7 +264,7 @@ export default function Survey() {
             ← Zurück
           </button>
 
-          <button type="button" onClick={handleNext} disabled={isSubmitting} className="btn-primary flex items-center gap-2">
+          <button type="button" onClick={handleNext} disabled={isSubmitting || (isLastQuestion() && survey.settings?.captcha && !turnstileToken)} className="btn-primary flex items-center gap-2">
             {isSubmitting ? (
               <>
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

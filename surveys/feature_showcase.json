@@ -1,0 +1,271 @@
+{
+    "id": "feature_showcase",
+    "title": "Produktfeedback Survey",
+    "version": "2.0.0",
+    "branding": {
+        "logo_url": "https://picsum.photos/200/50",
+        "primary_color": "#10b981",
+        "font_family": "Outfit"
+    },
+    "settings": {
+        "captcha": false,
+        "show_progress": true,
+        "allow_back": true,
+        "allow_multiple_responses": true,
+        "thank_you": {
+            "title": "Vielen Dank für dein Feedback! 🎉",
+            "message": "Deine Meinung hilft uns, besser zu werden.\n\nAls Dankeschön erhältst du Zugang zu unserer Beta.",
+            "cta_text": "Zur Beta anmelden",
+            "cta_url": "https://example.com/beta",
+            "redirect_delay": 10
+        }
+    },
+    "variants": [
+        {
+            "id": "product_focus",
+            "weight": 50,
+            "questions": [
+                {
+                    "id": "discovery",
+                    "type": "dropdown",
+                    "text": "Wie hast du von unserem Produkt erfahren?",
+                    "options": [
+                        {
+                            "value": "social",
+                            "label": "Social Media"
+                        },
+                        {
+                            "value": "friends",
+                            "label": "Freunde / Kollegen"
+                        },
+                        {
+                            "value": "search",
+                            "label": "Google / Suche"
+                        },
+                        {
+                            "value": "blog",
+                            "label": "Blog / Artikel"
+                        },
+                        {
+                            "value": "other",
+                            "label": "Sonstiges"
+                        }
+                    ],
+                    "required": true
+                },
+                {
+                    "id": "satisfaction",
+                    "type": "scale",
+                    "text": "Wie zufrieden bist du mit unserem Produkt insgesamt?",
+                    "config": {
+                        "min": 1,
+                        "max": 5,
+                        "min_label": "Sehr unzufrieden",
+                        "max_label": "Sehr zufrieden"
+                    },
+                    "required": true
+                },
+                {
+                    "id": "recommend",
+                    "type": "radio",
+                    "text": "Würdest du unser Produkt weiterempfehlen?",
+                    "options": [
+                        {
+                            "value": "yes",
+                            "label": "Ja, auf jeden Fall"
+                        },
+                        {
+                            "value": "maybe",
+                            "label": "Vielleicht"
+                        },
+                        {
+                            "value": "no",
+                            "label": "Nein"
+                        }
+                    ],
+                    "required": true
+                },
+                {
+                    "id": "features_used",
+                    "type": "checkbox",
+                    "text": "Welche Features nutzt du regelmäßig?",
+                    "options": [
+                        {
+                            "value": "dashboard",
+                            "label": "Dashboard"
+                        },
+                        {
+                            "value": "export",
+                            "label": "Daten-Export"
+                        },
+                        {
+                            "value": "api",
+                            "label": "API-Zugang"
+                        },
+                        {
+                            "value": "mobile",
+                            "label": "Mobile App"
+                        },
+                        {
+                            "value": "analytics",
+                            "label": "Analytics"
+                        }
+                    ],
+                    "show_if": "answers.satisfaction >= 3"
+                },
+                {
+                    "id": "improvement",
+                    "type": "textarea",
+                    "text": "Was können wir verbessern? Dein Feedback ist uns wichtig.",
+                    "show_if": "answers.satisfaction < 3",
+                    "required": false
+                },
+                {
+                    "id": "email",
+                    "type": "text",
+                    "text": "Deine E-Mail für Updates (optional)",
+                    "required": false
+                },
+                {
+                    "id": "contact_permission",
+                    "type": "radio",
+                    "text": "Dürfen wir dich für Rückfragen kontaktieren?",
+                    "options": [
+                        {
+                            "value": "yes",
+                            "label": "Ja, gerne"
+                        },
+                        {
+                            "value": "no",
+                            "label": "Nein, danke"
+                        }
+                    ],
+                    "show_if": "answers.email != ''"
+                }
+            ]
+        },
+        {
+            "id": "experience_focus",
+            "weight": 50,
+            "questions": [
+                {
+                    "id": "discovery",
+                    "type": "dropdown",
+                    "text": "Auf welchem Weg bist du zu uns gekommen?",
+                    "options": [
+                        {
+                            "value": "social",
+                            "label": "Instagram / Twitter / LinkedIn"
+                        },
+                        {
+                            "value": "friends",
+                            "label": "Empfehlung"
+                        },
+                        {
+                            "value": "search",
+                            "label": "Suchmaschine"
+                        },
+                        {
+                            "value": "blog",
+                            "label": "Blogpost / Newsletter"
+                        },
+                        {
+                            "value": "other",
+                            "label": "Anders"
+                        }
+                    ],
+                    "required": true
+                },
+                {
+                    "id": "satisfaction",
+                    "type": "scale",
+                    "text": "Wie würdest du deine Erfahrung mit uns bewerten?",
+                    "config": {
+                        "min": 1,
+                        "max": 5,
+                        "min_label": "Frustrierend",
+                        "max_label": "Fantastisch"
+                    },
+                    "required": true
+                },
+                {
+                    "id": "recommend",
+                    "type": "radio",
+                    "text": "Würdest du uns einem Freund empfehlen?",
+                    "options": [
+                        {
+                            "value": "yes",
+                            "label": "Definitiv!"
+                        },
+                        {
+                            "value": "maybe",
+                            "label": "Eventuell"
+                        },
+                        {
+                            "value": "no",
+                            "label": "Eher nicht"
+                        }
+                    ],
+                    "required": true
+                },
+                {
+                    "id": "best_part",
+                    "type": "checkbox",
+                    "text": "Was gefällt dir am besten?",
+                    "options": [
+                        {
+                            "value": "design",
+                            "label": "Das Design"
+                        },
+                        {
+                            "value": "speed",
+                            "label": "Die Geschwindigkeit"
+                        },
+                        {
+                            "value": "features",
+                            "label": "Die Features"
+                        },
+                        {
+                            "value": "support",
+                            "label": "Der Support"
+                        },
+                        {
+                            "value": "price",
+                            "label": "Das Preis-Leistungs-Verhältnis"
+                        }
+                    ],
+                    "show_if": "answers.satisfaction >= 3"
+                },
+                {
+                    "id": "frustration",
+                    "type": "textarea",
+                    "text": "Was hat dich frustriert? Wir wollen es besser machen.",
+                    "show_if": "answers.satisfaction < 3",
+                    "required": false
+                },
+                {
+                    "id": "email",
+                    "type": "text",
+                    "text": "E-Mail für exklusive Beta-Einladungen (optional)",
+                    "required": false
+                },
+                {
+                    "id": "contact_permission",
+                    "type": "radio",
+                    "text": "Können wir uns bei dir melden?",
+                    "options": [
+                        {
+                            "value": "yes",
+                            "label": "Ja, klar"
+                        },
+                        {
+                            "value": "no",
+                            "label": "Lieber nicht"
+                        }
+                    ],
+                    "show_if": "answers.email != ''"
+                }
+            ]
+        }
+    ]
+}
