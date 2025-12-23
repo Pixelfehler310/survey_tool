@@ -78,6 +78,15 @@ class SurveyQuestion(BaseModel):
     skip_to: Optional[str] = None
 
 
+class ThankYouConfig(BaseModel):
+    """Configuration for custom thank-you page after submission."""
+    title: Optional[str] = None
+    message: Optional[str] = None
+    cta_text: Optional[str] = None
+    cta_url: Optional[str] = None
+    redirect_delay: Optional[int] = None
+
+
 class SurveySettings(BaseModel):
     """Survey settings."""
     allow_back: bool = True
@@ -85,6 +94,8 @@ class SurveySettings(BaseModel):
     submit_redirect: Optional[str] = None
     captcha: bool = False  # Enable/disable Turnstile
     allow_multiple_responses: bool = False  # Allow multiple responses from same device
+    duplicate_prevention: Optional[str] = None  # 'none', 'client', or 'server'
+    thank_you: Optional[ThankYouConfig] = None  # Custom thank-you page configuration
 
 
 class SurveyBranding(BaseModel):

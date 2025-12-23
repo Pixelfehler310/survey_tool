@@ -15,6 +15,8 @@ export default function Survey() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
+  const [submittedSurvey, setSubmittedSurvey] = useState(null); // Store survey for thank-you page
+  const [countdown, setCountdown] = useState(0);
 
   const {
     survey,
@@ -129,6 +131,8 @@ export default function Survey() {
       // Mark as completed for client-side duplicate prevention
       markAsCompleted(survey?.settings);
 
+      // Store survey config for thank-you page BEFORE reset
+      setSubmittedSurvey(survey);
       setIsSubmitted(true);
 
       // Reset store after successful submission
@@ -169,16 +173,24 @@ export default function Survey() {
 
   // Handle auto-redirect after submission if configured
   useEffect(() => {
-    if (isSubmitted && survey?.settings?.thank_you) {
-      const { cta_url, redirect_delay } = survey.settings.thank_you;
+    if (isSubmitted && submittedSurvey?.settings?.thank_you) {
+      const { cta_url, redirect_delay } = submittedSurvey.settings.thank_you;
       if (redirect_delay && cta_url) {
-        const timer = setTimeout(() => {
-          window.location.href = cta_url;
-        }, redirect_delay * 1000);
-        return () => clearTimeout(timer);
+        setCountdown(redirect_delay);
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              window.location.href = cta_url;
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        return () => clearInterval(timer);
       }
     }
-  }, [isSubmitted, survey]);
+  }, [isSubmitted, submittedSurvey]);
 
   // Loading state
   if (isLoading) {
@@ -239,7 +251,8 @@ export default function Survey() {
 
   // Submitted state with custom thank-you page
   if (isSubmitted) {
-    const thankYouConfig = survey?.settings?.thank_you || {};
+    // Use submittedSurvey since survey is reset to null after submission
+    const thankYouConfig = submittedSurvey?.settings?.thank_you || {};
     const { title = "Vielen Dank!", message = "Deine Antworten wurden erfolgreich übermittelt.", cta_text, cta_url, redirect_delay } = thankYouConfig;
 
     return (
@@ -265,7 +278,7 @@ export default function Survey() {
             </Link>
           )}
 
-          {redirect_delay && cta_url && <p className="text-sm text-slate-400 mt-4">Weiterleitung in {redirect_delay} Sekunden...</p>}
+          {countdown > 0 && cta_url && <p className="text-sm text-slate-400 mt-4">Weiterleitung in {countdown} Sekunden...</p>}
         </div>
       </div>
     );
@@ -315,7 +328,7 @@ export default function Survey() {
         {/* Error message */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 flex items-center gap-3">
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             {error}
