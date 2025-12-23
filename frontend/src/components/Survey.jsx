@@ -1,13 +1,10 @@
-/**
- * Survey - Main survey container component
- */
-
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import useSurveyStore from "../store/surveyStore";
 import { loadSurvey, submitResponse, generateFingerprint } from "../lib/surveyEngine";
 import Question from "./Question";
 import ProgressBar from "./ProgressBar";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Survey() {
   const { surveyId } = useParams();
@@ -126,10 +123,10 @@ export default function Survey() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center transition-colors duration-300">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-slate-600">Umfrage wird geladen...</p>
+          <p className="mt-4 text-slate-500 dark:text-slate-400">Umfrage wird geladen...</p>
         </div>
       </div>
     );
@@ -138,15 +135,18 @@ export default function Survey() {
   // Error state
   if (error && !survey) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+      <div className="min-h-screen flex items-center justify-center px-4 transition-colors duration-300">
         <div className="card max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-slate-800 mb-2">Fehler</h2>
-          <p className="text-slate-600">{error}</p>
+          <h2 className="text-xl font-semibold mb-2">Fehler</h2>
+          <p className="text-slate-600 dark:text-slate-400">{error}</p>
+          <Link to="/" className="mt-6 inline-block text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
+            Zurück zur Übersicht
+          </Link>
         </div>
       </div>
     );
@@ -155,15 +155,18 @@ export default function Survey() {
   // Submitted state
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+      <div className="min-h-screen flex items-center justify-center px-4 transition-colors duration-300">
         <div className="card max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-slate-800 mb-2">Vielen Dank!</h2>
-          <p className="text-slate-600">Deine Antworten wurden erfolgreich übermittelt.</p>
+          <h2 className="text-xl font-semibold mb-2">Vielen Dank!</h2>
+          <p className="text-slate-600 dark:text-slate-400">Deine Antworten wurden erfolgreich übermittelt.</p>
+          <Link to="/" className="mt-6 inline-block text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
+            Neue Umfrage starten
+          </Link>
         </div>
       </div>
     );
@@ -180,26 +183,35 @@ export default function Survey() {
   const showProgress = survey.settings?.show_progress !== false;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
+    <div className="min-h-screen py-8 px-4 transition-colors duration-300">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4">{survey.title}</h1>
-
-          {showProgress && <ProgressBar progress={progress} />}
+        <div className="flex justify-between items-start mb-8">
+          <div className="flex-1 mr-4">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4">{survey.title}</h1>
+            {showProgress && <ProgressBar progress={progress} />}
+          </div>
+          <ThemeToggle />
         </div>
 
         {/* Question card */}
-        <div className="card mb-6">
+        <div className="card mb-6 md:p-8">
           {currentQuestion ? (
             <Question question={currentQuestion} value={currentAnswer} onChange={(value) => setAnswer(currentQuestion.id, value)} error={validationError} />
           ) : (
-            <p className="text-slate-600">Keine Fragen verfügbar.</p>
+            <p className="text-slate-500 dark:text-slate-400">Keine Fragen verfügbar.</p>
           )}
         </div>
 
         {/* Error message */}
-        {error && <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">{error}</div>}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 flex items-center gap-3">
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {error}
+          </div>
+        )}
 
         {/* Navigation buttons */}
         <div className="flex justify-between gap-4">
@@ -222,8 +234,8 @@ export default function Survey() {
         </div>
 
         {/* Keyboard hint */}
-        <p className="text-center text-sm text-slate-400 mt-6">
-          Drücke <kbd className="px-2 py-1 bg-slate-100 rounded text-xs">Enter</kbd> um fortzufahren
+        <p className="text-center text-sm text-slate-400 mt-8">
+          Drücke <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs shadow-sm">Enter</kbd> um fortzufahren
         </p>
       </div>
     </div>

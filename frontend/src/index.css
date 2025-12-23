@@ -7,20 +7,24 @@
   --color-secondary: #64748b;
   --color-success: #22c55e;
   --color-error: #ef4444;
+
+  /* Light theme values */
   --color-background: #f8fafc;
   --color-surface: #ffffff;
   --color-text: #1e293b;
   --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-input-bg: #ffffff;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #0f172a;
-    --color-surface: #1e293b;
-    --color-text: #f8fafc;
-    --color-text-muted: #94a3b8;
-  }
+/* Specific overrides for Dark mode, triggered by .dark class */
+.dark {
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-input-bg: #1e293b;
 }
 
 /* Base styles */
@@ -28,6 +32,7 @@ body {
   background-color: var(--color-background);
   color: var(--color-text);
   font-family: "Inter", system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Custom component styles */
@@ -36,15 +41,19 @@ body {
 }
 
 .btn-secondary {
-  @apply bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-3 px-6 rounded-lg transition-colors duration-200;
+  @apply bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium py-3 px-6 rounded-lg transition-colors duration-200;
 }
 
 .input-field {
-  @apply w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all duration-200;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  @apply w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all duration-200;
 }
 
 .card {
-  @apply bg-white rounded-xl shadow-lg p-6 border border-slate-100;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  @apply rounded-xl shadow-lg p-6 border border-slate-100 dark:border-slate-800;
 }
 
 /* Animation for question transitions */

@@ -7,22 +7,32 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi.security import OAuth2PasswordRequestForm
+from ..config import get_settings
 from ..database import get_db
 from ..models.response import Response
 from ..schemas.response import ResponseOut, ResponseList, SurveyStats, Token
 from .auth import require_admin, create_admin_token, TokenData
 
 router = APIRouter(tags=["admin"])
-
+settings = get_settings()
 
 @router.post("/token", response_model=Token)
-async def get_admin_token():
+async def get_admin_token(form_data: OAuth2PasswordRequestForm = Depends()):
     """
-    Get an admin JWT token.
+    Get an admin JWT token using username/password.
     
-    For MVP, this creates a token without authentication.
-    In production, this should require credentials.
+    Default setup for MVP:
+    - Username: admin
+    - Password: admin (configurable in .env)
     """
+    if form_data.username != "admin" or form_data.password != settings.ADMIN_PASSWORD:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Ungültiger Benutzername oder Passwort",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     token = create_admin_token()
     return Token(access_token=token)
 

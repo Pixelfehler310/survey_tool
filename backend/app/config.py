@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+    from pydantic_settings import BaseSettings
 from typing import List
 from functools import lru_cache
 
@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     
     # Security
     JWT_SECRET_KEY: str = "dev-secret-change-in-production"
+    ADMIN_PASSWORD: str = "admin"  # Default password for MVP
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
@@ -19,6 +20,9 @@ class Settings(BaseSettings):
     
     # Surveys
     SURVEYS_PATH: str = "./surveys"
+    
+    # Cloudflare Turnstile (CAPTCHA)
+    TURNSTILE_SECRET_KEY: str = ""  # Leave empty to disable
     
     @property
     def cors_origins_list(self) -> List[str]:

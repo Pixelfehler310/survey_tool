@@ -23,13 +23,13 @@ export default function Question({ question, value, onChange, error }) {
   return (
     <div className="animate-fade-in">
       {/* Question text */}
-      <h2 className="text-xl md:text-2xl font-semibold text-slate-800 mb-2">
+      <h2 className="text-xl md:text-2xl font-semibold mb-2">
         {question.text}
         {question.required && <span className="text-red-500 ml-1">*</span>}
       </h2>
 
       {/* Helper text */}
-      {question.description && <p className="text-slate-500 mb-6">{question.description}</p>}
+      {question.description && <p className="text-slate-500 dark:text-slate-400 mb-6">{question.description}</p>}
 
       {/* Question component */}
       <div className="mt-6">

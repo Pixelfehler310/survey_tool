@@ -14,6 +14,7 @@ class ResponseCreate(BaseModel):
     meta: Optional[Dict[str, Any]] = Field(default_factory=dict)
     started_at: Optional[datetime] = None
     fingerprint: Optional[str] = Field(None, max_length=64)
+    turnstile_token: Optional[str] = Field(None, description="Cloudflare Turnstile response token")
 
 
 class ResponsePartialUpdate(BaseModel):

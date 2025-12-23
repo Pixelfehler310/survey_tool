@@ -22,8 +22,12 @@ export default function Scale({ question, value, onChange }) {
             type="button"
             onClick={() => onChange(num)}
             className={`
-              min-w-[48px] h-12 rounded-lg font-medium text-lg transition-all duration-200
-              ${value === num ? "bg-indigo-600 text-white scale-110 shadow-lg" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}
+              min-w-[48px] h-12 rounded-lg font-bold text-lg transition-all duration-300 transform
+              ${
+                value === num
+                  ? "bg-indigo-600 dark:bg-indigo-500 text-white scale-110 shadow-lg"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }
             `}
           >
             {num}
@@ -33,7 +37,7 @@ export default function Scale({ question, value, onChange }) {
 
       {/* Labels */}
       {(config.min_label || config.max_label) && (
-        <div className="flex justify-between mt-3 text-sm text-slate-500">
+        <div className="flex justify-between mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">
           <span>{config.min_label || ""}</span>
           <span>{config.max_label || ""}</span>
         </div>

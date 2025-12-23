@@ -24,14 +24,18 @@ export default function CheckboxGroup({ question, value, onChange }) {
             key={option.value}
             className={`
               flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
-              ${isSelected ? "border-indigo-500 bg-indigo-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"}
+              ${
+                isSelected
+                  ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30"
+                  : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+              }
             `}
           >
             <input type="checkbox" value={option.value} checked={isSelected} onChange={() => handleToggle(option.value)} className="sr-only" />
             <span
               className={`
               w-5 h-5 rounded border-2 mr-4 flex items-center justify-center transition-colors
-              ${isSelected ? "border-indigo-500 bg-indigo-500" : "border-slate-300"}
+              ${isSelected ? "border-indigo-500 bg-indigo-500" : "border-slate-300 dark:border-slate-600"}
             `}
             >
               {isSelected && (
@@ -40,7 +44,7 @@ export default function CheckboxGroup({ question, value, onChange }) {
                 </svg>
               )}
             </span>
-            <span className="text-slate-700 font-medium">{option.label}</span>
+            <span className="font-medium">{option.label}</span>
           </label>
         );
       })}

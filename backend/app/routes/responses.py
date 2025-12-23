@@ -1,4 +1,6 @@
 import hashlib
+import json
+from pathlib import Path
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -8,6 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..database import get_db
 from ..models.response import Response
 from ..schemas.response import ResponseCreate, ResponsePartialUpdate, ResponseOut
+from ..services.turnstile import verify_turnstile
+from ..services.webhooks import trigger_webhooks
+from ..config import get_settings
 
 router = APIRouter(tags=["responses"])
 
@@ -39,6 +44,18 @@ def extract_client_meta(request: Request, meta: dict) -> dict:
     return enriched_meta
 
 
+def load_survey_definition(survey_id: str) -> Optional[dict]:
+    """Load survey definition from JSON file."""
+    settings = get_settings()
+    survey_path = Path(settings.SURVEYS_PATH) / f"{survey_id}.json"
+    
+    if not survey_path.exists():
+        return None
+    
+    with open(survey_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 @router.post("/responses", response_model=ResponseOut, status_code=status.HTTP_201_CREATED)
 async def create_response(
     response_data: ResponseCreate,
@@ -51,7 +68,19 @@ async def create_response(
     - Stores answers and metadata
     - Supports duplicate prevention via fingerprint
     - Captures client metadata (user-agent, source, IP hash)
+    - Validates Turnstile CAPTCHA if configured
+    - Triggers webhooks if configured
     """
+    # Verify Turnstile CAPTCHA if token provided
+    if response_data.turnstile_token:
+        client_ip = request.client.host if request.client else None
+        is_valid = await verify_turnstile(response_data.turnstile_token, client_ip)
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="CAPTCHA verification failed"
+            )
+    
     # Check for duplicate if fingerprint provided
     if response_data.fingerprint:
         fingerprint_hash = hash_fingerprint(response_data.fingerprint)
@@ -85,6 +114,20 @@ async def create_response(
     db.add(db_response)
     await db.flush()
     await db.refresh(db_response)
+    
+    # Trigger webhooks (async, fire-and-forget)
+    survey_def = load_survey_definition(response_data.survey_id)
+    if survey_def:
+        await trigger_webhooks(
+            survey_def,
+            "response.created",
+            {
+                "response_id": str(db_response.id),
+                "survey_id": response_data.survey_id,
+                "answers": response_data.answers,
+                "completed_at": db_response.completed_at.isoformat() if db_response.completed_at else None,
+            }
+        )
     
     return db_response
 
