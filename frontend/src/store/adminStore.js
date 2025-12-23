@@ -15,6 +15,8 @@ const useAdminStore = create(
             // Data state
             responses: [],
             stats: null,
+            surveys: [],
+            questionAnalysis: null,
             isLoading: false,
             error: null,
 
@@ -122,6 +124,31 @@ const useAdminStore = create(
                     set({ stats: data, isLoading: false });
                 } catch (error) {
                     set({ error: error.message, isLoading: false });
+                }
+            },
+
+            fetchSurveys: async () => {
+                const { authFetch } = get();
+
+                try {
+                    const response = await authFetch('/api/v1/admin/surveys');
+                    const data = await response.json();
+                    set({ surveys: data.surveys || [] });
+                } catch (error) {
+                    console.error('Failed to fetch surveys:', error);
+                }
+            },
+
+            fetchQuestionAnalysis: async (surveyId) => {
+                const { authFetch } = get();
+                set({ questionAnalysis: null });
+
+                try {
+                    const response = await authFetch(`/api/v1/admin/analytics/questions/${surveyId}`);
+                    const data = await response.json();
+                    set({ questionAnalysis: data });
+                } catch (error) {
+                    console.error('Failed to fetch question analysis:', error);
                 }
             },
 

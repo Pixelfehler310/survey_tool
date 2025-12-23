@@ -14,6 +14,7 @@ export default function Survey() {
   const [searchParams] = useSearchParams();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState(null);
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
 
   const {
     survey,
@@ -42,6 +43,33 @@ export default function Survey() {
   // Apply branding from survey configuration
   useBranding(survey);
 
+  // Check for client-side duplicate prevention
+  const getStorageKey = () => `survey_${surveyId}_completed`;
+
+  const checkClientDuplicate = (surveySettings) => {
+    const dupMode = surveySettings?.duplicate_prevention;
+    // Default to client mode if not specified and allow_multiple_responses is false
+    const effectiveMode = dupMode || (surveySettings?.allow_multiple_responses ? "none" : "client");
+
+    if (effectiveMode === "client") {
+      const completed = localStorage.getItem(getStorageKey());
+      if (completed) {
+        setAlreadyCompleted(true);
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const markAsCompleted = (surveySettings) => {
+    const dupMode = surveySettings?.duplicate_prevention;
+    const effectiveMode = dupMode || (surveySettings?.allow_multiple_responses ? "none" : "client");
+
+    if (effectiveMode === "client") {
+      localStorage.setItem(getStorageKey(), Date.now().toString());
+    }
+  };
+
   // Load survey on mount
   useEffect(() => {
     async function fetchSurvey() {
@@ -50,7 +78,11 @@ export default function Survey() {
 
       try {
         const data = await loadSurvey(surveyId);
-        setSurvey(data);
+
+        // Check for client-side duplicate before showing survey
+        if (!checkClientDuplicate(data.settings)) {
+          setSurvey(data);
+        }
       } catch (err) {
         setError(err.message || "Umfrage konnte nicht geladen werden.");
       } finally {
@@ -93,6 +125,10 @@ export default function Survey() {
       }
 
       await submitResponse(data);
+
+      // Mark as completed for client-side duplicate prevention
+      markAsCompleted(survey?.settings);
+
       setIsSubmitted(true);
 
       // Reset store after successful submission
@@ -131,6 +167,19 @@ export default function Survey() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentIndex]);
 
+  // Handle auto-redirect after submission if configured
+  useEffect(() => {
+    if (isSubmitted && survey?.settings?.thank_you) {
+      const { cta_url, redirect_delay } = survey.settings.thank_you;
+      if (redirect_delay && cta_url) {
+        const timer = setTimeout(() => {
+          window.location.href = cta_url;
+        }, redirect_delay * 1000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isSubmitted, survey]);
+
   // Loading state
   if (isLoading) {
     return (
@@ -163,20 +212,35 @@ export default function Survey() {
     );
   }
 
+  // Already completed state (client-side duplicate prevention)
+  if (alreadyCompleted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 transition-colors duration-300">
+        <div className="card max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Bereits teilgenommen</h2>
+          <p className="text-slate-600 dark:text-slate-400">Du hast diese Umfrage bereits ausgefüllt. Vielen Dank für deine Teilnahme!</p>
+          <Link to="/" className="mt-6 inline-block text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
+            Zurück zur Übersicht
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   // Submitted state with custom thank-you page
   if (isSubmitted) {
     const thankYouConfig = survey?.settings?.thank_you || {};
     const { title = "Vielen Dank!", message = "Deine Antworten wurden erfolgreich übermittelt.", cta_text, cta_url, redirect_delay } = thankYouConfig;
-
-    // Auto-redirect if configured
-    useEffect(() => {
-      if (redirect_delay && cta_url) {
-        const timer = setTimeout(() => {
-          window.location.href = cta_url;
-        }, redirect_delay * 1000);
-        return () => clearTimeout(timer);
-      }
-    }, [redirect_delay, cta_url]);
 
     return (
       <div className="min-h-screen flex items-center justify-center px-4 transition-colors duration-300">

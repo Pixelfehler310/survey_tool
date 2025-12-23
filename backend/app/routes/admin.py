@@ -1,7 +1,9 @@
 import csv
 import io
+import json
+from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select, func, delete
@@ -315,3 +317,172 @@ async def delete_response(
     )
     
     return None
+
+
+@router.get("/surveys")
+async def list_surveys(
+    db: AsyncSession = Depends(get_db),
+    admin: TokenData = Depends(require_admin)
+):
+    """
+    List all available surveys with response counts.
+    
+    Combines surveys from JSON files and database.
+    """
+    surveys = []
+    
+    # Get surveys from JSON files
+    surveys_path = Path(settings.SURVEYS_PATH)
+    if surveys_path.exists():
+        for survey_file in surveys_path.glob("*.json"):
+            try:
+                with open(survey_file, "r", encoding="utf-8") as f:
+                    survey_def = json.load(f)
+                    survey_id = survey_def.get("id", survey_file.stem)
+                    
+                    # Get response count for this survey
+                    count_result = await db.execute(
+                        select(func.count(Response.id)).where(Response.survey_id == survey_id)
+                    )
+                    response_count = count_result.scalar() or 0
+                    
+                    surveys.append({
+                        "id": survey_id,
+                        "title": survey_def.get("title", survey_id),
+                        "response_count": response_count,
+                        "source": "file"
+                    })
+            except (json.JSONDecodeError, IOError):
+                continue
+    
+    # Sort by response_count descending
+    surveys.sort(key=lambda x: x["response_count"], reverse=True)
+    
+    return {"surveys": surveys}
+
+
+@router.get("/analytics/questions/{survey_id}")
+async def get_all_question_analytics(
+    survey_id: str,
+    db: AsyncSession = Depends(get_db),
+    admin: TokenData = Depends(require_admin)
+):
+    """
+    Get analytics for all questions in a survey.
+    
+    Returns answer distribution for each question.
+    Perfect for building a scroll-feed of question analytics.
+    """
+    # Load survey definition to get question metadata
+    surveys_path = Path(settings.SURVEYS_PATH)
+    survey_file = surveys_path / f"{survey_id}.json"
+    
+    questions_meta = {}
+    if survey_file.exists():
+        try:
+            with open(survey_file, "r", encoding="utf-8") as f:
+                survey_def = json.load(f)
+                
+                # Get questions from main questions array
+                for q in survey_def.get("questions", []):
+                    questions_meta[q["id"]] = {
+                        "text": q.get("text", ""),
+                        "type": q.get("type", "text"),
+                        "options": q.get("options", [])
+                    }
+                
+                # Also get questions from variants
+                for variant in survey_def.get("variants", []):
+                    for q in variant.get("questions", []):
+                        if q["id"] not in questions_meta:
+                            questions_meta[q["id"]] = {
+                                "text": q.get("text", ""),
+                                "type": q.get("type", "text"),
+                                "options": q.get("options", [])
+                            }
+        except (json.JSONDecodeError, IOError):
+            pass
+    
+    # Get all responses for this survey
+    result = await db.execute(
+        select(Response).where(Response.survey_id == survey_id)
+    )
+    responses = result.scalars().all()
+    
+    if not responses:
+        return {
+            "survey_id": survey_id,
+            "total_responses": 0,
+            "questions": []
+        }
+    
+    # Analyze each question
+    question_analytics = {}
+    
+    for response in responses:
+        if not response.answers:
+            continue
+            
+        for question_id, answer in response.answers.items():
+            if question_id not in question_analytics:
+                question_analytics[question_id] = {
+                    "values": [],
+                    "distribution": {}
+                }
+            
+            # Store raw value for numeric calculations
+            question_analytics[question_id]["values"].append(answer)
+            
+            # Build distribution
+            if isinstance(answer, list):
+                # Multiple choice
+                for item in answer:
+                    key = str(item)
+                    question_analytics[question_id]["distribution"][key] = \
+                        question_analytics[question_id]["distribution"].get(key, 0) + 1
+            else:
+                key = str(answer)
+                question_analytics[question_id]["distribution"][key] = \
+                    question_analytics[question_id]["distribution"].get(key, 0) + 1
+    
+    # Format results
+    questions_result = []
+    for question_id, data in question_analytics.items():
+        meta = questions_meta.get(question_id, {})
+        total_answers = len(data["values"])
+        
+        # Calculate distribution with percentages
+        distribution = [
+            {
+                "value": value,
+                "count": count,
+                "percentage": round((count / total_answers) * 100, 1) if total_answers > 0 else 0
+            }
+            for value, count in sorted(data["distribution"].items(), key=lambda x: x[1], reverse=True)
+        ]
+        
+        question_result = {
+            "question_id": question_id,
+            "text": meta.get("text", question_id),
+            "type": meta.get("type", "unknown"),
+            "total_answers": total_answers,
+            "distribution": distribution
+        }
+        
+        # Add numeric stats for scale/number questions
+        numeric_values = [v for v in data["values"] if isinstance(v, (int, float))]
+        if numeric_values:
+            question_result["stats"] = {
+                "average": round(sum(numeric_values) / len(numeric_values), 2),
+                "min": min(numeric_values),
+                "max": max(numeric_values),
+                "median": sorted(numeric_values)[len(numeric_values) // 2]
+            }
+        
+        questions_result.append(question_result)
+    
+    return {
+        "survey_id": survey_id,
+        "total_responses": len(responses),
+        "questions": questions_result
+    }

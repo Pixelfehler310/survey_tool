@@ -2,7 +2,7 @@ import hashlib
 import json
 import asyncio
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import select, func
@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
 from ..models.response import Response
+from ..models.participation import ParticipationHash
 from ..schemas.response import ResponseCreate, ResponsePartialUpdate, ResponseOut
 from ..services.turnstile import verify_turnstile
 from ..services.webhooks import trigger_webhooks
@@ -22,6 +23,25 @@ router = APIRouter(tags=["responses"])
 def hash_fingerprint(fingerprint: str) -> str:
     """Hash a fingerprint for privacy."""
     return hashlib.sha256(fingerprint.encode()).hexdigest()
+
+
+def generate_participation_hash(request: Request) -> str:
+    """
+    Generate a daily-rotating participation hash for server-side duplicate prevention.
+    
+    Privacy design:
+    - Uses IP + User-Agent + Secret + Date
+    - Daily rotation limits tracking window
+    - Cannot be reversed to identify user
+    """
+    settings = get_settings()
+    ip = request.client.host if request.client else "unknown"
+    ua = request.headers.get("user-agent", "")[:100]  # Limit UA length
+    today = date.today().isoformat()
+    
+    # Combine with secret for uniqueness across installations
+    data = f"{ip}|{ua}|{settings.JWT_SECRET_KEY}|{today}"
+    return hashlib.sha256(data.encode()).hexdigest()
 
 
 def extract_client_meta(request: Request, meta: dict) -> dict:
@@ -59,6 +79,7 @@ def load_survey_definition(survey_id: str) -> Optional[dict]:
         return json.load(f)
 
 
+
 @router.post("/responses", response_model=ResponseOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit("30/minute")
 async def create_response(
@@ -87,23 +108,61 @@ async def create_response(
     
     # Load survey definition to check settings
     survey_def = load_survey_definition(response_data.survey_id)
-    allow_multiple = survey_def.get("settings", {}).get("allow_multiple_responses", False) if survey_def else False
+    settings_dict = survey_def.get("settings", {}) if survey_def else {}
     
-    # Check for duplicate if fingerprint provided AND multiple responses not allowed
+    # Determine duplicate prevention mode
+    # Support both new 'duplicate_prevention' and legacy 'allow_multiple_responses'
+    dup_mode = settings_dict.get("duplicate_prevention", None)
+    if dup_mode is None:
+        # Fallback to legacy setting
+        allow_multiple = settings_dict.get("allow_multiple_responses", False)
+        dup_mode = "none" if allow_multiple else "client"
+    
+    # Handle duplicate prevention based on mode
     fingerprint_hash = None
-    if response_data.fingerprint and not allow_multiple:
-        fingerprint_hash = hash_fingerprint(response_data.fingerprint)
+    
+    if dup_mode == "server":
+        # Server-side duplicate prevention using participation hash
+        participation_hash = generate_participation_hash(request)
+        
         existing = await db.execute(
-            select(Response).where(
-                Response.survey_id == response_data.survey_id,
-                Response.fingerprint_hash == fingerprint_hash
+            select(ParticipationHash).where(
+                ParticipationHash.survey_id == response_data.survey_id,
+                ParticipationHash.hash == participation_hash,
+                ParticipationHash.created_date == date.today()
             )
         )
         if existing.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Response already submitted from this device"
+                detail="Du hast heute bereits an dieser Umfrage teilgenommen."
             )
+        
+        # Store participation hash (separate from response for anonymity)
+        db.add(ParticipationHash(
+            survey_id=response_data.survey_id,
+            hash=participation_hash,
+            created_date=date.today()
+        ))
+    
+    elif dup_mode == "client":
+        # Client-side mode: only check fingerprint if provided (for compatibility)
+        # Main check happens in frontend via LocalStorage
+        if response_data.fingerprint:
+            fingerprint_hash = hash_fingerprint(response_data.fingerprint)
+            existing = await db.execute(
+                select(Response).where(
+                    Response.survey_id == response_data.survey_id,
+                    Response.fingerprint_hash == fingerprint_hash
+                )
+            )
+            if existing.scalar_one_or_none():
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Response already submitted from this device"
+                )
+    
+    # mode == "none": No duplicate check
     
     # Enrich metadata with request info
     enriched_meta = extract_client_meta(request, response_data.meta or {})
