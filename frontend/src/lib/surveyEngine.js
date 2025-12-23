@@ -17,6 +17,9 @@ export function getVisibleQuestions(survey, answers = {}) {
     const context = { answers };
 
     return survey.questions.filter(question => {
+        // Hidden fields are never shown (they're auto-filled from URL params)
+        if (question.type === "hidden") return false;
+
         // If no show_if condition, always show
         if (!question.show_if) return true;
 

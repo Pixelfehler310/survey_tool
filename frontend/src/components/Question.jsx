@@ -3,6 +3,7 @@
  */
 
 import { TextInput, TextArea, RadioGroup, CheckboxGroup, Scale, Dropdown } from "./QuestionTypes";
+import RankingQuestion from "./questions/RankingQuestion";
 
 const QUESTION_COMPONENTS = {
   text: TextInput,
@@ -11,6 +12,8 @@ const QUESTION_COMPONENTS = {
   checkbox: CheckboxGroup,
   scale: Scale,
   dropdown: Dropdown,
+  ranking: RankingQuestion,
+  hidden: () => null, // Hidden fields are not rendered
 };
 
 export default function Question({ question, value, onChange, error }) {

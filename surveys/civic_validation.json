@@ -1,0 +1,1003 @@
+{
+    "id": "civic_validation",
+    "title": "Civic OS Validierungsumfrage",
+    "version": "1.0.0",
+    "settings": {
+        "captcha": false,
+        "show_progress": true,
+        "allow_back": true,
+        "duplicate_prevention": "client",
+        "thank_you": {
+            "title": "Vielen Dank für deine Teilnahme! 🎉",
+            "message": "Deine Antworten helfen uns, Civic OS für dich zu bauen.\n\nWir melden uns, sobald wir live gehen!",
+            "cta_text": "Zur Civic OS Website",
+            "cta_url": "https://civic-os.eu",
+            "redirect_delay": 8
+        }
+    },
+    "branding": {
+        "primary_color": "#6366f1"
+    },
+    "questions": [
+        {
+            "id": "privacy_concern_bigtech",
+            "type": "radio",
+            "text": "Wie findest du es, dass Big Tech (Google, Meta) deine Daten nutzt?",
+            "required": true,
+            "options": [
+                {
+                    "value": "very_concerning",
+                    "label": "Sehr beunruhigend"
+                },
+                {
+                    "value": "somewhat_concerning",
+                    "label": "Etwas beunruhigend"
+                },
+                {
+                    "value": "dont_care",
+                    "label": "Ist mir egal"
+                }
+            ]
+        },
+        {
+            "id": "enshittification_frustration",
+            "type": "radio",
+            "text": "Hast du das Gefühl, dass große Tech-Apps mit der Zeit schlechter werden (mehr Werbung, Paywalls, nervige Features)?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "somewhat",
+                    "label": "Etwas"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "loneliness_freq",
+            "type": "radio",
+            "text": "Wie oft hast du dich im letzten Monat einsam gefühlt oder dir mehr soziale Kontakte gewünscht?",
+            "required": true,
+            "options": [
+                {
+                    "value": "never",
+                    "label": "Nie"
+                },
+                {
+                    "value": "sometimes",
+                    "label": "Manchmal"
+                },
+                {
+                    "value": "often",
+                    "label": "Oft"
+                },
+                {
+                    "value": "constantly",
+                    "label": "Ständig"
+                }
+            ]
+        },
+        {
+            "id": "activity_pain",
+            "type": "radio",
+            "text": "Wie oft fällt es dir schwer, Aktivitäten mit Freunden zu planen?",
+            "required": true,
+            "options": [
+                {
+                    "value": "very_often",
+                    "label": "Sehr oft"
+                },
+                {
+                    "value": "sometimes",
+                    "label": "Manchmal"
+                },
+                {
+                    "value": "rarely",
+                    "label": "Selten"
+                },
+                {
+                    "value": "never",
+                    "label": "Nie"
+                }
+            ]
+        },
+        {
+            "id": "coordination_pain",
+            "type": "checkbox",
+            "text": "Was sind die häufigsten Probleme bei der Koordination von Aktivitäten mit Freunden?",
+            "required": false,
+            "show_if": "answers.activity_pain == 'very_often' || answers.activity_pain == 'sometimes'",
+            "options": [
+                {
+                    "value": "messy_chats",
+                    "label": "Unübersichtliche Gruppenchats"
+                },
+                {
+                    "value": "unclear_responses",
+                    "label": "Unklarheit, wer wirklich kommt"
+                },
+                {
+                    "value": "no_initiation",
+                    "label": "Niemand macht den ersten Schritt"
+                },
+                {
+                    "value": "flaking",
+                    "label": "Leute sagen kurzfristig ab"
+                },
+                {
+                    "value": "other",
+                    "label": "Andere Gründe"
+                }
+            ]
+        },
+        {
+            "id": "activity_barrier_main",
+            "type": "radio",
+            "text": "Denk an das letzte Mal, als du eine neue Aktivität ausprobieren wolltest (Film, Spiel, Sport, Event). Was hat dich davon abgehalten?",
+            "required": true,
+            "options": [
+                {
+                    "value": "no_one_to_go_with",
+                    "label": "Niemand, um mitzukommen"
+                },
+                {
+                    "value": "dont_know_where",
+                    "label": "Wusste nicht wo/wie"
+                },
+                {
+                    "value": "too_expensive",
+                    "label": "Zu teuer"
+                },
+                {
+                    "value": "no_time",
+                    "label": "Keine Zeit"
+                },
+                {
+                    "value": "i_did_it",
+                    "label": "Ich hab es gemacht"
+                }
+            ]
+        },
+        {
+            "id": "invitation_comfort",
+            "type": "radio",
+            "text": "Wie wohl würdest du dich dabei fühlen, andere Leute mit dem gleichen Problem zu dieser Aktivität einzuladen?",
+            "required": true,
+            "show_if": "answers.activity_barrier_main == 'no_one_to_go_with'",
+            "options": [
+                {
+                    "value": "very_comfortable",
+                    "label": "Sehr wohl"
+                },
+                {
+                    "value": "somewhat_comfortable",
+                    "label": "Etwas wohl"
+                },
+                {
+                    "value": "uncomfortable",
+                    "label": "Unwohl"
+                },
+                {
+                    "value": "never",
+                    "label": "Würde ich nie tun"
+                }
+            ]
+        },
+        {
+            "id": "friends_availability",
+            "type": "radio",
+            "text": "Hast du Leute, die du zu Aktivitäten einladen würdest, oder suchst du nach neuen Leuten?",
+            "required": true,
+            "options": [
+                {
+                    "value": "have_people",
+                    "label": "Ich habe Leute, aber Koordination ist schwer"
+                },
+                {
+                    "value": "want_new_people",
+                    "label": "Ich möchte neue Leute kennenlernen"
+                },
+                {
+                    "value": "both",
+                    "label": "Beides"
+                }
+            ]
+        },
+        {
+            "id": "with_me_signal_preference",
+            "type": "radio",
+            "text": "Wenn du etwas unternehmen willst, aber Gesellschaft brauchst (z.B. Fitnessstudio, Film schauen), was würdest du bevorzugen?",
+            "required": true,
+            "options": [
+                {
+                    "value": "signal_all",
+                    "label": "Ein Signal an alle Freunde: \"Gehe um 18 Uhr ins Gym – wer ist dabei?\""
+                },
+                {
+                    "value": "text_individually",
+                    "label": "3-5 Freunde einzeln anschreiben"
+                },
+                {
+                    "value": "go_alone",
+                    "label": "Einfach alleine gehen"
+                }
+            ]
+        },
+        {
+            "id": "feed_scope_preference",
+            "type": "radio",
+            "text": "Für eine Social-Activity-App: Welche Inhalte würdest du sehen wollen?",
+            "required": true,
+            "options": [
+                {
+                    "value": "local_only",
+                    "label": "Nur Aktivitäten im Umkreis von 5-10km"
+                },
+                {
+                    "value": "mix",
+                    "label": "Mix aus lokal und stadtweit"
+                },
+                {
+                    "value": "everything",
+                    "label": "Alles, auch weltweite Events"
+                }
+            ]
+        },
+        {
+            "id": "dating_market_frustration",
+            "type": "radio",
+            "text": "Wie zufrieden bist du mit dem aktuellen Dating-Markt (Apps, Leute IRL treffen, etc.)?",
+            "required": true,
+            "options": [
+                {
+                    "value": "very_frustrated",
+                    "label": "Sehr frustriert"
+                },
+                {
+                    "value": "somewhat_frustrated",
+                    "label": "Etwas frustriert"
+                },
+                {
+                    "value": "its_fine",
+                    "label": "Ist okay"
+                }
+            ]
+        },
+        {
+            "id": "dating_app_usage",
+            "type": "radio",
+            "text": "Hast du in den letzten 12 Monaten eine Dating-App (Tinder, Bumble, etc.) benutzt?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes_active",
+                    "label": "Ja, aktiv"
+                },
+                {
+                    "value": "yes_quit",
+                    "label": "Ja, aber aufgehört"
+                },
+                {
+                    "value": "never",
+                    "label": "Nie benutzt"
+                }
+            ]
+        },
+        {
+            "id": "dating_frustration_paywall",
+            "type": "radio",
+            "text": "Wie sehr haben dich Paywalls und eingeschränkte Features bei Dating-Apps frustriert?",
+            "required": false,
+            "show_if": "answers.dating_app_usage != 'never'",
+            "options": [
+                {
+                    "value": "extremely",
+                    "label": "Extrem"
+                },
+                {
+                    "value": "moderately",
+                    "label": "Mäßig"
+                },
+                {
+                    "value": "a_little",
+                    "label": "Ein bisschen"
+                },
+                {
+                    "value": "not_at_all",
+                    "label": "Gar nicht"
+                }
+            ]
+        },
+        {
+            "id": "dating_trust_business",
+            "type": "radio",
+            "text": "Vertraust du Dating-Apps, dir wirklich bei der Partnersuche zu helfen (vs. dich süchtig zu machen)?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "somewhat",
+                    "label": "Etwas"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "dating_switch_willingness",
+            "type": "radio",
+            "text": "Würdest du zu einer neuen Dating-App wechseln, wenn sie gemeinnützig wäre, anfangs weniger User hätte, aber mehr echte Verbindung durch einen transparenten Algorithmus ohne Paywalls verspricht?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes_immediately",
+                    "label": "Ja, sofort"
+                },
+                {
+                    "value": "yes_if_friends",
+                    "label": "Ja, wenn Freunde sie nutzen"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "volunteer_past_12m",
+            "type": "radio",
+            "text": "Wie oft hast du dich in den letzten 12 Monaten ehrenamtlich engagiert oder in deiner Community geholfen?",
+            "required": true,
+            "options": [
+                {
+                    "value": "never",
+                    "label": "Nie"
+                },
+                {
+                    "value": "sometimes",
+                    "label": "Manchmal (1-5 mal)"
+                },
+                {
+                    "value": "often",
+                    "label": "Oft (6-12 mal)"
+                },
+                {
+                    "value": "constantly",
+                    "label": "Ständig (mehr als 12 mal)"
+                }
+            ]
+        },
+        {
+            "id": "volunteer_barrier_info",
+            "type": "radio",
+            "text": "Wolltest du schon mal freiwillig helfen, wusstest aber nicht wo oder wie?",
+            "required": true,
+            "show_if": "answers.volunteer_past_12m == 'never' || answers.volunteer_past_12m == 'sometimes'",
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "volunteer_barrier_friends",
+            "type": "radio",
+            "text": "Wärst du eher bereit, dich freiwillig zu engagieren, wenn deine Freunde auch mitgehen würden?",
+            "required": true,
+            "show_if": "answers.volunteer_past_12m == 'never' || answers.volunteer_past_12m == 'sometimes'",
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                },
+                {
+                    "value": "prefer_alone",
+                    "label": "Ich gehe lieber alleine"
+                }
+            ]
+        },
+        {
+            "id": "volunteer_barrier_recognition",
+            "type": "radio",
+            "text": "Wie wichtig ist es dir, Anerkennung (Zertifikate, Badges, Lebenslauf-Nachweise, verifizierte Skills) für freiwillige Arbeit zu bekommen?",
+            "required": true,
+            "show_if": "answers.volunteer_past_12m == 'never' || answers.volunteer_past_12m == 'sometimes'",
+            "options": [
+                {
+                    "value": "very_important",
+                    "label": "Sehr wichtig"
+                },
+                {
+                    "value": "somewhat_important",
+                    "label": "Etwas wichtig"
+                },
+                {
+                    "value": "not_important",
+                    "label": "Nicht wichtig"
+                }
+            ]
+        },
+        {
+            "id": "volunteer_motivation_rank",
+            "type": "ranking",
+            "text": "Ordne diese nach Wichtigkeit (wenn du dich freiwillig engagieren würdest):",
+            "description": "Ziehe die Optionen in deine bevorzugte Reihenfolge (1 = am wichtigsten)",
+            "required": true,
+            "show_if": "answers.volunteer_past_12m == 'never' || answers.volunteer_past_12m == 'sometimes'",
+            "options": [
+                {
+                    "value": "friends_going",
+                    "label": "Freunde gehen mit"
+                },
+                {
+                    "value": "cv_skills",
+                    "label": "Lebenslauf & verifizierte Skills"
+                },
+                {
+                    "value": "coupons",
+                    "label": "Rabatte/Gutscheine"
+                },
+                {
+                    "value": "competition",
+                    "label": "Wettbewerb (Stadt-Battles)"
+                }
+            ]
+        },
+        {
+            "id": "login_preference",
+            "type": "radio",
+            "text": "Welche Anmelde-Methode bevorzugst du bei neuen Apps?",
+            "required": true,
+            "options": [
+                {
+                    "value": "social_login",
+                    "label": "Social Login (z.B. Google, Apple) für Bequemlichkeit"
+                },
+                {
+                    "value": "email_password",
+                    "label": "E-Mail und Passwort für direkte Kontrolle"
+                },
+                {
+                    "value": "privacy_focused",
+                    "label": "Datenschutz-fokussiert (anonym, dezentral) / Kein Login"
+                }
+            ]
+        },
+        {
+            "id": "social_credit_concern",
+            "type": "radio",
+            "text": "Wie würdest du dich bei einem 'Trust Level' fühlen, das auf deiner Freiwilligenarbeit/Aktivität basiert (standardmäßig privat, kann sichtbar gemacht werden)?",
+            "required": true,
+            "options": [
+                {
+                    "value": "sounds_great",
+                    "label": "Klingt super"
+                },
+                {
+                    "value": "okay_if_private",
+                    "label": "Okay, wenn privat"
+                },
+                {
+                    "value": "dont_like",
+                    "label": "Das gefällt mir nicht"
+                }
+            ]
+        },
+        {
+            "id": "trust_safety_pain",
+            "type": "radio",
+            "text": "Hast du schon mal vermieden, einem Online-Event, einer Gruppe oder Dating-App beizutreten, weil du dir nicht sicher warst, ob die Leute echt/vertrauenswürdig sind?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes_multiple",
+                    "label": "Ja, mehrfach"
+                },
+                {
+                    "value": "yes_once",
+                    "label": "Ja, ein- oder zweimal"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "privacy_paradox_verification",
+            "type": "radio",
+            "text": "Wärst du an einem Verifizierungssystem interessiert, das beweist, dass du eine echte Person bist (keine Bots/Catfishing), ohne deinen Namen/Adresse zu verraten?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                },
+                {
+                    "value": "dont_know",
+                    "label": "Weiß ich nicht"
+                }
+            ]
+        },
+        {
+            "id": "proof_without_exposure",
+            "type": "checkbox",
+            "text": "Welche davon findest du nützlich?",
+            "required": false,
+            "options": [
+                {
+                    "value": "prove_18",
+                    "label": "Beweisen, dass ich 18+ bin, ohne meinen Ausweis zu zeigen"
+                },
+                {
+                    "value": "prove_student",
+                    "label": "Beweisen, dass ich Student bin, ohne die Uni zu nennen"
+                },
+                {
+                    "value": "prove_city",
+                    "label": "Beweisen, dass ich in [Stadt] lebe, ohne meine genaue Adresse"
+                },
+                {
+                    "value": "prove_volunteer",
+                    "label": "Beweisen, dass ich ein verifizierter Freiwilliger bin"
+                },
+                {
+                    "value": "none",
+                    "label": "Nichts davon"
+                }
+            ]
+        },
+        {
+            "id": "friend_dependency",
+            "type": "radio",
+            "text": "Würdest du eine neue App mit coolen Features nutzen, auch wenn KEINER deiner Freunde sie aktuell nutzt?",
+            "required": true,
+            "options": [
+                {
+                    "value": "probably",
+                    "label": "Wahrscheinlich"
+                },
+                {
+                    "value": "maybe",
+                    "label": "Vielleicht, wenn sie wirklich gut ist"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "migration_trigger",
+            "type": "checkbox",
+            "text": "Was würde dich überzeugen, eine neue App für Aktivitätenplanung zu nutzen (im Vergleich zu WhatsApp-Gruppenchats)?",
+            "required": false,
+            "options": [
+                {
+                    "value": "better_features",
+                    "label": "Bessere Features"
+                },
+                {
+                    "value": "privacy_focused",
+                    "label": "Datenschutz-fokussiert"
+                },
+                {
+                    "value": "friends_use_it",
+                    "label": "Freunde nutzen sie"
+                },
+                {
+                    "value": "nothing",
+                    "label": "Nichts, ich mag es so wie es ist"
+                }
+            ]
+        },
+        {
+            "id": "early_adopter_incentive",
+            "type": "radio",
+            "text": "Würdest du Freunde zu einer neuen App einladen, wenn diese dadurch bessere Features bekommt und ihr beide exklusive Vorteile (Badges, Early Features) erhaltet?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "maybe",
+                    "label": "Vielleicht"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "social_anxiety_level",
+            "type": "radio",
+            "text": "Wie wohl fühlst du dich dabei, neuen Gruppen beizutreten?",
+            "required": true,
+            "options": [
+                {
+                    "value": "very_comfortable",
+                    "label": "Sehr wohl"
+                },
+                {
+                    "value": "somewhat_comfortable",
+                    "label": "Etwas wohl"
+                },
+                {
+                    "value": "uncomfortable",
+                    "label": "Unwohl"
+                },
+                {
+                    "value": "never",
+                    "label": "Würde ich nie tun"
+                }
+            ]
+        },
+        {
+            "id": "social_anxiety_reasons",
+            "type": "checkbox",
+            "text": "Wenn du dich unwohl fühlst, neuen Gruppen beizutreten – was sind die Hauptgründe?",
+            "required": false,
+            "show_if": "answers.social_anxiety_level == 'somewhat_comfortable' || answers.social_anxiety_level == 'uncomfortable' || answers.social_anxiety_level == 'never'",
+            "options": [
+                {
+                    "value": "not_knowing_anyone",
+                    "label": "Niemanden kennen"
+                },
+                {
+                    "value": "fear_judged",
+                    "label": "Angst, nicht reinzupassen oder beurteilt zu werden"
+                },
+                {
+                    "value": "uncertainty",
+                    "label": "Unsicherheit, was zu tun oder zu sagen"
+                },
+                {
+                    "value": "overwhelmed",
+                    "label": "Überfordert von neuen sozialen Situationen"
+                },
+                {
+                    "value": "prefer_alone",
+                    "label": "Lieber alleine oder mit engen Freunden"
+                },
+                {
+                    "value": "lack_confidence",
+                    "label": "Mangelndes Selbstvertrauen in sozialen Skills"
+                }
+            ]
+        },
+        {
+            "id": "buddy_system_interest",
+            "type": "radio",
+            "text": "Würdest du dich wohler fühlen, einem Gruppen-Event beizutreten, wenn du mit einem erfahrenen 'Buddy' gepaart werden könntest, der dich einführt?",
+            "required": true,
+            "show_if": "answers.social_anxiety_level == 'uncomfortable' || answers.social_anxiety_level == 'never'",
+            "options": [
+                {
+                    "value": "yes_helps",
+                    "label": "Ja, das würde sehr helfen"
+                },
+                {
+                    "value": "maybe",
+                    "label": "Vielleicht"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein, lieber alleine oder gar nicht"
+                }
+            ]
+        },
+        {
+            "id": "employer_value_civic_cv",
+            "type": "radio",
+            "text": "Wenn du jemanden einstellen würdest: Würde ein 'Civic CV' mit verifizierter Freiwilligenarbeit und Skills (XP, Badges) deine Entscheidung beeinflussen?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "maybe",
+                    "label": "Vielleicht"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "student_cv_motivation",
+            "type": "radio",
+            "text": "Als Student/Jobsuchender: Würde 'Lebenslauf-Boost durch verifizierte Skills und Freiwilligenarbeit' dich motivieren, die App mehr zu nutzen?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "maybe",
+                    "label": "Vielleicht"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "loneliness_epidemic",
+            "type": "radio",
+            "text": "Stimmst du zu, dass Einsamkeit ein wachsendes Problem in unserer Gesellschaft ist?",
+            "required": true,
+            "options": [
+                {
+                    "value": "strongly_agree",
+                    "label": "Stimme voll zu"
+                },
+                {
+                    "value": "agree",
+                    "label": "Stimme zu"
+                },
+                {
+                    "value": "neutral",
+                    "label": "Neutral"
+                },
+                {
+                    "value": "disagree",
+                    "label": "Stimme nicht zu"
+                }
+            ]
+        },
+        {
+            "id": "big_tech_distrust",
+            "type": "radio",
+            "text": "Glaubst du, dass Big Tech (Google, Meta, Microsoft) dein Wohlbefinden über ihre Gewinne stellt?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                },
+                {
+                    "value": "dont_know",
+                    "label": "Weiß ich nicht"
+                }
+            ]
+        },
+        {
+            "id": "dating_app_predatory",
+            "type": "radio",
+            "text": "Hast du das Gefühl, dass Dating-Apps darauf ausgelegt sind, dich am Swipen zu halten, anstatt dir zu helfen, einen Partner zu finden?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja, definitiv"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                },
+                {
+                    "value": "dont_know",
+                    "label": "Weiß ich nicht"
+                }
+            ]
+        },
+        {
+            "id": "whatsapp_chaos",
+            "type": "radio",
+            "text": "Hast du schon mal ein Event oder eine Aktivität verpasst wegen chaotischer Gruppenchat-Planung?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes_multiple",
+                    "label": "Ja, mehrfach"
+                },
+                {
+                    "value": "yes_once",
+                    "label": "Ja, ein- oder zweimal"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "volunteering_cv_boost",
+            "type": "radio",
+            "text": "Würdest du dich häufiger freiwillig engagieren, wenn es für Bewerbungen zählen würde?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes_much_more",
+                    "label": "Ja, viel mehr"
+                },
+                {
+                    "value": "somewhat_more",
+                    "label": "Etwas mehr"
+                },
+                {
+                    "value": "no_difference",
+                    "label": "Kein Unterschied"
+                }
+            ]
+        },
+        {
+            "id": "supporter_subscription_wtp",
+            "type": "radio",
+            "text": "Wie viel wärst du bereit, pro Monat zu zahlen, um eine gemeinnützige Social-App (ohne Werbung) zu unterstützen, die dir hilft, dich mit Freunden zu treffen, besser zu daten und freiwillig zu helfen?",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0€ (Ich zahle nicht)"
+                },
+                {
+                    "value": "ads",
+                    "label": "Ich würde Werbung auf unaufdringliche Weise anschauen"
+                },
+                {
+                    "value": "1_2",
+                    "label": "1-2€"
+                },
+                {
+                    "value": "3_5",
+                    "label": "3-5€"
+                },
+                {
+                    "value": "6_10",
+                    "label": "6-10€"
+                },
+                {
+                    "value": "10_plus",
+                    "label": "10€+"
+                }
+            ]
+        },
+        {
+            "id": "core_value_validated",
+            "type": "checkbox",
+            "text": "Wir bauen eine Familie von Apps – nutze nur, was du brauchst:\n\n📱 Civic Connect – Das Aktivitäts-Signal\n→ \"Gehe um 18 Uhr ins Gym – wer ist dabei?\" – Freunde treten mit einem Tap bei\n→ Kein WhatsApp-Chaos mehr, nur lokale Aktivitäten, verschlüsselter Chat\n\n💫 Civic Spark – Dating mit Tiefe\n→ 100% verifizierte Menschen (ID-Check) – null Bots, null Catfish\n→ Matching basierend auf Werten, optionaler Depth Mode (Gesichter erst später)\n\n🎮 Civic Quest – Level Up durch Helfen\n→ Echte Quests (Park-Cleanups, Seniorenbesuche) mit Freunden\n→ XP sammeln, Badges freischalten, Civic CV für Bewerbungen\n\n🔐 Civic ID – Dein digitales Vertrauens-Badge\n→ Ein verifizierter Account für alle Civic Apps\n→ Beweise 18+ oder Student OHNE ID/Adresse zu zeigen\n\nAlles gemeinnützig. Alles Open-Source. Alles kostenlos.\n\nWelche würdest du nutzen?",
+            "required": true,
+            "options": [
+                {
+                    "value": "connect",
+                    "label": "Civic Connect (Aktivitäten/Social)"
+                },
+                {
+                    "value": "spark",
+                    "label": "Civic Spark (Dating)"
+                },
+                {
+                    "value": "quest",
+                    "label": "Civic Quest (Freiwilligenarbeit)"
+                },
+                {
+                    "value": "id",
+                    "label": "Civic ID (Verifizierter Account)"
+                },
+                {
+                    "value": "none",
+                    "label": "Nichts davon"
+                }
+            ]
+        },
+        {
+            "id": "immediate_interest",
+            "type": "radio",
+            "text": "Wie interessiert bist du daran, das auszuprobieren?",
+            "required": true,
+            "show_if": "!answers.core_value_validated?.includes('none')",
+            "options": [
+                {
+                    "value": "yes_immediately",
+                    "label": "Ja, ich würde es sofort nutzen wenn es launcht"
+                },
+                {
+                    "value": "yes_if_friends",
+                    "label": "Ja, wenn meine Freunde es auch nutzen"
+                },
+                {
+                    "value": "maybe",
+                    "label": "Vielleicht, ich würde es ausprobieren"
+                },
+                {
+                    "value": "not_interested",
+                    "label": "Nicht wirklich interessiert"
+                }
+            ]
+        },
+        {
+            "id": "age_group",
+            "type": "radio",
+            "text": "Wie alt bist du?",
+            "required": true,
+            "options": [
+                {
+                    "value": "16_20",
+                    "label": "16-20"
+                },
+                {
+                    "value": "21_25",
+                    "label": "21-25"
+                },
+                {
+                    "value": "26_30",
+                    "label": "26-30"
+                },
+                {
+                    "value": "31_40",
+                    "label": "31-40"
+                },
+                {
+                    "value": "40_plus",
+                    "label": "40+"
+                }
+            ]
+        },
+        {
+            "id": "student_status",
+            "type": "radio",
+            "text": "Bist du aktuell Student?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Ja"
+                },
+                {
+                    "value": "no",
+                    "label": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "city_name",
+            "type": "text",
+            "text": "In welcher Stadt lebst du?",
+            "description": "Wichtig für unsere Go-Live-Planung",
+            "required": true
+        },
+        {
+            "id": "source",
+            "type": "hidden",
+            "text": "Traffic Source",
+            "required": false
+        }
+    ]
+}

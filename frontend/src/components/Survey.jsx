@@ -99,6 +99,26 @@ export default function Survey() {
     };
   }, [surveyId]);
 
+  // Auto-fill hidden fields from URL parameters
+  useEffect(() => {
+    if (!survey?.questions) return;
+
+    const hiddenQuestions = survey.questions.filter((q) => q.type === "hidden");
+
+    hiddenQuestions.forEach((q) => {
+      // Try multiple parameter names for each hidden field
+      const paramNames = [q.id, `utm_${q.id}`, q.id.replace("_", "-")];
+
+      for (const paramName of paramNames) {
+        const value = searchParams.get(paramName);
+        if (value) {
+          setAnswer(q.id, value);
+          break;
+        }
+      }
+    });
+  }, [survey, searchParams, setAnswer]);
+
   // Handle form submission
   const handleSubmit = async () => {
     // Validate last question
