@@ -17,6 +17,7 @@ class Response(Base):
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
     survey_id = Column(String(100), nullable=False, index=True)
+    variant_id = Column(String(50), nullable=True, index=True)  # For A/B testing
     answers = Column(JSON, nullable=False)
     meta = Column(JSON, default=dict)
     fingerprint_hash = Column(String(64), index=True, nullable=True)

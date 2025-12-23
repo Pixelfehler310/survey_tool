@@ -1,10 +1,11 @@
 import hashlib
 import json
+import asyncio
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
@@ -104,6 +105,7 @@ async def create_response(
     # Create response
     db_response = Response(
         survey_id=response_data.survey_id,
+        variant_id=response_data.variant_id,
         answers=response_data.answers,
         meta=enriched_meta,
         fingerprint_hash=fingerprint_hash,
@@ -128,6 +130,24 @@ async def create_response(
                 "completed_at": db_response.completed_at.isoformat() if db_response.completed_at else None,
             }
         )
+    
+    # Send email notification (async, fire-and-forget)
+    from ..services.email import send_response_notification
+    
+    # Count total responses for this survey
+    count_result = await db.execute(
+        select(func.count(Response.id)).where(Response.survey_id == response_data.survey_id)
+    )
+    response_count = count_result.scalar() or 0
+    
+    asyncio.create_task(
+        send_response_notification(
+            survey_id=response_data.survey_id,
+            response_id=str(db_response.id),
+            survey_title=survey_def.get("title", response_data.survey_id) if survey_def else response_data.survey_id,
+            response_count=response_count,
+        )
+    )
     
     return db_response
 

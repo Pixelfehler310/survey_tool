@@ -1,0 +1,21 @@
+# Development config: Only backend in Docker, frontend runs locally
+# Usage: docker compose -f docker-compose.dev.yml up --build
+# Then run: cd frontend && npm run dev
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./surveys:/app/surveys
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./data/survey.db
+      - JWT_SECRET_KEY=dev-secret-change-in-production
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+      - SURVEYS_PATH=/app/surveys
+      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-}
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

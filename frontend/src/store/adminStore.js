@@ -103,7 +103,7 @@ const useAdminStore = create(
                     const data = await response.json();
 
                     set({
-                        responses: data.responses || [],
+                        responses: data.items || [],
                         totalCount: data.total || 0,
                         isLoading: false,
                     });

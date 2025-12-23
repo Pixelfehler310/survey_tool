@@ -12,7 +12,10 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://backend:8000',
+        // Use 'backend' hostname in Docker, 'localhost' for local dev
+        target: process.env.VITE_BACKEND_HOST
+          ? `http://${process.env.VITE_BACKEND_HOST}:8000`
+          : 'http://localhost:8000',
         changeOrigin: true,
       },
     },

@@ -127,6 +127,7 @@ const useSurveyStore = create(
 
                 return {
                     survey_id: survey?.id,
+                    variant_id: survey?.variant_id || null,  // Include variant_id for A/B testing
                     answers: serializeAnswers(answers, survey),
                     meta: {},
                     started_at: startedAt,

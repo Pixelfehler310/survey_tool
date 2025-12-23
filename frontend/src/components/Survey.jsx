@@ -5,6 +5,7 @@ import { loadSurvey, submitResponse, generateFingerprint } from "../lib/surveyEn
 import Question from "./Question";
 import ProgressBar from "./ProgressBar";
 import ThemeToggle from "./ThemeToggle";
+import useBranding from "../hooks/useBranding";
 
 export default function Survey() {
   const { surveyId } = useParams();
@@ -35,6 +36,9 @@ export default function Survey() {
     setError,
     reset,
   } = useSurveyStore();
+
+  // Apply branding from survey configuration
+  useBranding(survey);
 
   // Load survey on mount
   useEffect(() => {
@@ -152,21 +156,45 @@ export default function Survey() {
     );
   }
 
-  // Submitted state
+  // Submitted state with custom thank-you page
   if (isSubmitted) {
+    const thankYouConfig = survey?.settings?.thank_you || {};
+    const { title = "Vielen Dank!", message = "Deine Antworten wurden erfolgreich übermittelt.", cta_text, cta_url, redirect_delay } = thankYouConfig;
+
+    // Auto-redirect if configured
+    useEffect(() => {
+      if (redirect_delay && cta_url) {
+        const timer = setTimeout(() => {
+          window.location.href = cta_url;
+        }, redirect_delay * 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [redirect_delay, cta_url]);
+
     return (
       <div className="min-h-screen flex items-center justify-center px-4 transition-colors duration-300">
-        <div className="card max-w-md w-full text-center">
+        <div className="card max-w-md w-full text-center py-10">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold mb-2">Vielen Dank!</h2>
-          <p className="text-slate-600 dark:text-slate-400">Deine Antworten wurden erfolgreich übermittelt.</p>
-          <Link to="/" className="mt-6 inline-block text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
-            Neue Umfrage starten
-          </Link>
+          <h2 className="text-xl font-semibold mb-2">{title}</h2>
+          <p className="text-slate-600 dark:text-slate-400 whitespace-pre-line">{message}</p>
+
+          {cta_text && cta_url && (
+            <a href={cta_url} className="mt-6 inline-block btn-primary" target="_blank" rel="noopener noreferrer">
+              {cta_text}
+            </a>
+          )}
+
+          {!cta_url && (
+            <Link to="/" className="mt-6 inline-block text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
+              Neue Umfrage starten
+            </Link>
+          )}
+
+          {redirect_delay && cta_url && <p className="text-sm text-slate-400 mt-4">Weiterleitung in {redirect_delay} Sekunden...</p>}
         </div>
       </div>
     );

@@ -24,6 +24,15 @@ class Settings(BaseSettings):
     # Cloudflare Turnstile (CAPTCHA)
     TURNSTILE_SECRET_KEY: str = ""  # Leave empty to disable
     
+    # Email Notifications (SMTP)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_USE_TLS: bool = True
+    NOTIFICATION_EMAIL: str = ""  # Email to receive notifications
+    ADMIN_DASHBOARD_URL: str = "http://localhost:3000/admin"
+    
     @property
     def cors_origins_list(self) -> List[str]:
         """Parse CORS origins from comma-separated string."""

@@ -112,39 +112,56 @@ export default function Dashboard() {
           {/* Line Chart */}
           <div className="card">
             <h3 className="text-lg font-semibold mb-4">Responses pro Tag</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={lineChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="date" stroke="#64748b" fontSize={12} />
-                  <YAxis stroke="#64748b" fontSize={12} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--color-surface)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} dot={{ fill: "#6366f1" }} />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="h-64 w-full">
+              {lineChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                  <LineChart data={lineChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="date" stroke="#64748b" fontSize={12} />
+                    <YAxis stroke="#64748b" fontSize={12} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--color-surface)",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} dot={{ fill: "#6366f1" }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-400 text-sm italic">Noch keine Daten vorhanden</div>
+              )}
             </div>
           </div>
 
           {/* Pie Chart */}
           <div className="card">
             <h3 className="text-lg font-semibold mb-4">Traffic Sources</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                    {pieChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="h-64 w-full">
+              {pieChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-400 text-sm italic">Noch keine Daten vorhanden</div>
+              )}
             </div>
           </div>
         </div>
@@ -190,23 +207,31 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {responses.slice(0, 10).map((response) => (
-                    <tr key={response.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="py-3 px-2 font-mono text-xs">{response.id.slice(0, 8)}...</td>
-                      <td className="py-3 px-2">{response.survey_id}</td>
-                      <td className="py-3 px-2">{response.meta?.source || "-"}</td>
-                      <td className="py-3 px-2">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            response.completed_at ? "bg-green-100 dark:bg-green-900/30 text-green-600" : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600"
-                          }`}
-                        >
-                          {response.completed_at ? "Abgeschlossen" : "Offen"}
-                        </span>
+                  {responses.length > 0 ? (
+                    responses.slice(0, 10).map((response) => (
+                      <tr key={response.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td className="py-3 px-2 font-mono text-xs">{response.id.slice(0, 8)}...</td>
+                        <td className="py-3 px-2">{response.survey_id}</td>
+                        <td className="py-3 px-2">{response.meta?.source || "-"}</td>
+                        <td className="py-3 px-2">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              response.completed_at ? "bg-green-100 dark:bg-green-900/30 text-green-600" : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600"
+                            }`}
+                          >
+                            {response.completed_at ? "Abgeschlossen" : "Offen"}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-slate-500">{new Date(response.created_at).toLocaleDateString("de-DE")}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="py-8 text-center text-slate-400 italic">
+                        Keine Responses vorhanden
                       </td>
-                      <td className="py-3 px-2 text-slate-500">{new Date(response.created_at).toLocaleDateString("de-DE")}</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>

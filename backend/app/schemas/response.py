@@ -10,6 +10,7 @@ from typing import Optional, Dict, Any, List
 class ResponseCreate(BaseModel):
     """Schema for creating a new survey response."""
     survey_id: str = Field(..., min_length=1, max_length=100)
+    variant_id: Optional[str] = Field(None, max_length=50, description="A/B test variant ID")
     answers: Dict[str, Any]
     meta: Optional[Dict[str, Any]] = Field(default_factory=dict)
     started_at: Optional[datetime] = None
@@ -27,6 +28,7 @@ class ResponseOut(BaseModel):
     """Schema for response output."""
     id: str
     survey_id: str
+    variant_id: Optional[str] = None
     answers: Dict[str, Any]
     meta: Dict[str, Any]
     started_at: Optional[datetime]

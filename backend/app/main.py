@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .database import init_db
-from .routes import surveys, responses, admin
+from .routes import surveys, responses, admin, analytics
 
 settings = get_settings()
 
@@ -38,6 +38,7 @@ app.add_middleware(
 app.include_router(surveys.router, prefix="/api/v1")
 app.include_router(responses.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1/admin")
+app.include_router(analytics.router, prefix="/api/v1/admin")
 
 
 @app.get("/")
