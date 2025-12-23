@@ -2,23 +2,62 @@
  * AdminLogin - Login page for admin dashboard
  */
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import useAdminStore from "../../store/adminStore";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { login, isLoading, error } = useAdminStore();
-  const [username, setUsername] = useState("");
+  const location = useLocation();
+  const { login, isLoading, error, isAuthenticated } = useAdminStore();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isChecking, setIsChecking] = useState(true);
+  const [successMessage, setSuccessMessage] = useState(location.state?.message || null);
+
+  // Check if already authenticated or needs setup
+  useEffect(() => {
+    async function checkStatus() {
+      // If already authenticated, go to dashboard
+      if (isAuthenticated) {
+        navigate("/admin/dashboard");
+        return;
+      }
+
+      // Check if setup is needed
+      try {
+        const response = await fetch("/api/v1/setup/status");
+        const data = await response.json();
+
+        if (data.needs_setup) {
+          navigate("/admin/setup");
+          return;
+        }
+      } catch (err) {
+        // Server might be down, show login anyway
+      }
+
+      setIsChecking(false);
+    }
+    checkStatus();
+  }, [navigate, isAuthenticated]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await login(username, password);
+    setSuccessMessage(null);
+    const success = await login(email, password);
     if (success) {
       navigate("/admin/dashboard");
     }
   };
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 transition-colors duration-300">
@@ -38,10 +77,14 @@ export default function AdminLogin() {
           <p className="text-slate-500 dark:text-slate-400 mt-2">Melde dich an, um das Dashboard zu nutzen</p>
         </div>
 
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-sm">{successMessage}</div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Benutzername</label>
-            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="input-field" placeholder="admin" required />
+            <label className="block text-sm font-medium mb-2">E-Mail-Adresse</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input-field" placeholder="admin@example.com" required />
           </div>
 
           <div>

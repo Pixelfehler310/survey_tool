@@ -14,6 +14,7 @@ from ..schemas.response import ResponseCreate, ResponsePartialUpdate, ResponseOu
 from ..services.turnstile import verify_turnstile
 from ..services.webhooks import trigger_webhooks
 from ..config import get_settings
+from ..rate_limit import limiter
 
 router = APIRouter(tags=["responses"])
 
@@ -37,9 +38,10 @@ def extract_client_meta(request: Request, meta: dict) -> dict:
     if source:
         enriched_meta["source"] = source
     
-    # Add IP hash for analytics (privacy-preserving)
+    # Add IP hash for analytics (privacy-preserving) - only if enabled
+    settings = get_settings()
     client_ip = request.client.host if request.client else None
-    if client_ip:
+    if client_ip and settings.COLLECT_IP:
         enriched_meta["ip_hash"] = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
     
     return enriched_meta
@@ -58,6 +60,7 @@ def load_survey_definition(survey_id: str) -> Optional[dict]:
 
 
 @router.post("/responses", response_model=ResponseOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("30/minute")
 async def create_response(
     response_data: ResponseCreate,
     request: Request,

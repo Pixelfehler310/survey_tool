@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Survey from "./components/Survey";
 import Home from "./pages/Home";
 import ThankYou from "./pages/ThankYou";
-import { AdminLogin, Dashboard, ResponseList } from "./pages/admin";
+import { AdminLogin, AdminSetup, Dashboard, ResponseList } from "./pages/admin";
 import useThemeStore from "./store/themeStore";
 
 function App() {
@@ -26,6 +26,7 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/setup" element={<AdminSetup />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/responses" element={<ResponseList />} />
       </Routes>

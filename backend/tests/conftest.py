@@ -1,13 +1,19 @@
 import asyncio
+import os
 from typing import AsyncGenerator, Generator
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
+# Set required environment variables for tests BEFORE importing app
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-testing-only-32bytes")
+
 from app.main import app
 from app.database import Base, get_db
-from app.routes.auth import create_admin_token
+from app.routes.auth import create_access_token
+from app.models.user import User
+from app.routes.setup import hash_password
 
 # Test database URL (in-memory SQLite)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -60,10 +66,29 @@ async def client(test_db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     app.dependency_overrides.clear()
 
 
+@pytest_asyncio.fixture(scope="function")
+async def test_admin_user(test_db: AsyncSession) -> User:
+    """Create a test admin user."""
+    admin = User(
+        email="admin@test.com",
+        password_hash=hash_password("testpassword123"),
+        name="Test Admin",
+        is_admin=True
+    )
+    test_db.add(admin)
+    await test_db.commit()
+    await test_db.refresh(admin)
+    return admin
+
+
 @pytest.fixture
-def admin_token() -> str:
+def admin_token(test_admin_user: User) -> str:
     """Create an admin JWT token for testing."""
-    return create_admin_token()
+    return create_access_token({
+        "sub": test_admin_user.id,
+        "email": test_admin_user.email,
+        "role": "admin"
+    })
 
 
 @pytest.fixture

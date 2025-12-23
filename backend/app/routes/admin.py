@@ -2,7 +2,7 @@ import csv
 import io
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,29 +11,48 @@ from fastapi.security import OAuth2PasswordRequestForm
 from ..config import get_settings
 from ..database import get_db
 from ..models.response import Response
+from ..models.user import User
 from ..schemas.response import ResponseOut, ResponseList, SurveyStats, Token
-from .auth import require_admin, create_admin_token, TokenData
+from .auth import require_admin, create_access_token, TokenData, verify_password
+from ..rate_limit import limiter
 
 router = APIRouter(tags=["admin"])
 settings = get_settings()
 
+
 @router.post("/token", response_model=Token)
-async def get_admin_token(form_data: OAuth2PasswordRequestForm = Depends()):
+@limiter.limit("5/minute")
+async def get_admin_token(
+    request: Request,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db)
+):
     """
-    Get an admin JWT token using username/password.
+    Get a JWT token using email/password.
     
-    Default setup for MVP:
-    - Username: admin
-    - Password: admin (configurable in .env)
+    Authenticates against the users database.
+    The username field accepts the user's email address.
     """
-    if form_data.username != "admin" or form_data.password != settings.ADMIN_PASSWORD:
+    # Find user by email (username field contains email)
+    result = await db.execute(
+        select(User).where(User.email == form_data.username)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Ungültiger Benutzername oder Passwort",
+            detail="Ungültige E-Mail oder Passwort",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    token = create_admin_token()
+    # Create token with user info
+    token = create_access_token({
+        "sub": user.id,
+        "email": user.email,
+        "role": "admin" if user.is_admin else "user"
+    })
+    
     return Token(access_token=token)
 
 

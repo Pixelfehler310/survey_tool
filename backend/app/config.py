@@ -10,10 +10,12 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./data/survey.db"
     
     # Security
-    JWT_SECRET_KEY: str = "dev-secret-change-in-production"
-    ADMIN_PASSWORD: str = "admin"  # Default password for MVP
+    JWT_SECRET_KEY: str = ""  # REQUIRED - set via environment for production
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
+    
+    # Privacy / DSGVO
+    COLLECT_IP: bool = False  # Opt-in for IP collection
     
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"

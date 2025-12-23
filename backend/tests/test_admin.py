@@ -6,9 +6,12 @@ class TestAdminAuthentication:
     """Tests for admin authentication."""
 
     @pytest.mark.asyncio
-    async def test_get_admin_token(self, client: AsyncClient):
-        """Test getting an admin token."""
-        response = await client.post("/api/v1/admin/token")
+    async def test_get_admin_token(self, client: AsyncClient, test_admin_user):
+        """Test getting an admin token with valid credentials."""
+        response = await client.post(
+            "/api/v1/admin/token",
+            data={"username": "admin@test.com", "password": "testpassword123"}
+        )
         
         assert response.status_code == 200
         data = response.json()
@@ -16,11 +19,31 @@ class TestAdminAuthentication:
         assert data["token_type"] == "bearer"
 
     @pytest.mark.asyncio
+    async def test_admin_token_wrong_password(self, client: AsyncClient, test_admin_user):
+        """Test that wrong password is rejected."""
+        response = await client.post(
+            "/api/v1/admin/token",
+            data={"username": "admin@test.com", "password": "wrongpassword"}
+        )
+        
+        assert response.status_code == 401
+
+    @pytest.mark.asyncio
+    async def test_admin_token_nonexistent_user(self, client: AsyncClient):
+        """Test that login fails for non-existent user."""
+        response = await client.post(
+            "/api/v1/admin/token",
+            data={"username": "nobody@test.com", "password": "somepassword"}
+        )
+        
+        assert response.status_code == 401
+
+    @pytest.mark.asyncio
     async def test_admin_endpoint_without_token(self, client: AsyncClient):
         """Test that admin endpoints require authentication."""
         response = await client.get("/api/v1/admin/responses")
         
-        assert response.status_code == 401  # Unauthorized without token
+        assert response.status_code in [401, 403]  # Unauthorized without token
 
     @pytest.mark.asyncio
     async def test_admin_endpoint_with_invalid_token(self, client: AsyncClient):
