@@ -46,6 +46,7 @@ export default function Dashboard() {
   const [customDateEnd, setCustomDateEnd] = useState("");
   const [expandedResponseId, setExpandedResponseId] = useState(null);
   const [isAnalysisExpanded, setIsAnalysisExpanded] = useState(true);
+  const [surveyDef, setSurveyDef] = useState(null);
 
   // Load surveys on mount
   useEffect(() => {
@@ -56,6 +57,49 @@ export default function Dashboard() {
     fetchSurveys();
     fetchResponses();
   }, [isAuthenticated]);
+
+  // Load full survey definition when selected
+  useEffect(() => {
+    if (selectedSurvey) {
+      fetch(`/api/v1/surveys/${selectedSurvey}`)
+        .then((res) => res.json())
+        .then((data) => setSurveyDef(data))
+        .catch((err) => console.error("Failed to load survey def", err));
+    } else {
+      setSurveyDef(null);
+    }
+  }, [selectedSurvey]);
+
+  // Helper to get question text
+  const getQuestionText = (questionId) => {
+    if (!surveyDef) return questionId;
+    const q = surveyDef.questions.find((q) => q.id === questionId);
+    return q && q.text ? q.text : questionId;
+  };
+
+  // Helper to get answer label
+  const getAnswerLabel = (questionId, value) => {
+    if (!surveyDef) return String(value);
+
+    // Handle null/undefined
+    if (value === null || value === undefined) return "-";
+
+    const q = surveyDef.questions.find((q) => q.id === questionId);
+    if (!q || !q.options) return String(value);
+
+    // Helper for single value lookup
+    const lookup = (val) => {
+      const opt = q.options.find((o) => o.value === String(val));
+      return opt ? opt.label : val;
+    };
+
+    // Handle arrays (checkboxes)
+    if (Array.isArray(value)) {
+      return value.map(lookup).join(", ");
+    }
+
+    return lookup(value);
+  };
 
   // When surveys load, select first one
   useEffect(() => {
@@ -478,7 +522,7 @@ export default function Dashboard() {
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <span className="text-xs text-slate-500 dark:text-slate-400">Frage {index + 1}</span>
-                        <h4 className="font-medium">{question.text || question.question_id}</h4>
+                        <h4 className="font-medium">{getQuestionText(question.question_id)}</h4>
                       </div>
                       <span className="text-sm text-slate-500">{question.total_answers} Antworten</span>
                     </div>
@@ -497,8 +541,8 @@ export default function Dashboard() {
                     <div className="space-y-2">
                       {question.distribution.slice(0, 10).map((item, i) => (
                         <div key={item.value} className="flex items-center gap-3">
-                          <div className="w-32 text-sm text-slate-600 dark:text-slate-400 truncate" title={item.label || item.value}>
-                            {item.label || item.value}
+                          <div className="w-32 text-sm text-slate-600 dark:text-slate-400 truncate" title={getAnswerLabel(question.question_id, item.value)}>
+                            {getAnswerLabel(question.question_id, item.value)}
                           </div>
                           <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                             <div
@@ -601,10 +645,8 @@ export default function Dashboard() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                   {Object.entries(response.answers).map(([questionId, answer]) => (
                                     <div key={questionId} className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                                      <div className="text-xs text-slate-500 font-medium mb-1">{questionId}</div>
-                                      <div className="text-sm text-slate-900 dark:text-slate-100">
-                                        {Array.isArray(answer) ? answer.join(", ") : typeof answer === "object" ? JSON.stringify(answer) : String(answer)}
-                                      </div>
+                                      <div className="text-xs text-slate-500 font-medium mb-1">{getQuestionText(questionId)}</div>
+                                      <div className="text-sm text-slate-900 dark:text-slate-100">{getAnswerLabel(questionId, answer)}</div>
                                     </div>
                                   ))}
                                 </div>
