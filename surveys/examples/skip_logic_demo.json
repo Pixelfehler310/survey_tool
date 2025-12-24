@@ -167,7 +167,7 @@
             "id": "tech_preference",
             "type": "radio",
             "text": "Which tech area interests you most?",
-            "show_if": "answers.interests.includes('technology')",
+            "show_if": "answers.interests in ['technology']",
             "options": [
                 {
                     "value": "ai",
@@ -187,13 +187,13 @@
             "id": "travel_destination",
             "type": "text",
             "text": "What's your dream travel destination?",
-            "show_if": "answers.interests.includes('travel')"
+            "show_if": "answers.interests in ['travel']"
         },
         {
             "id": "combined_check",
             "type": "textarea",
             "text": "You're interested in both tech AND music! Tell us about your favorite music tech:",
-            "show_if": "answers.interests.includes('technology') && answers.interests.includes('music')"
+            "show_if": "answers.interests in ['technology'] and answers.interests in ['music']"
         },
         {
             "id": "final_comments",

@@ -112,7 +112,7 @@
             "type": "checkbox",
             "text": "Was sind die häufigsten Probleme bei der Koordination von Aktivitäten mit Freunden?",
             "required": false,
-            "show_if": "answers.activity_pain == 'very_often' || answers.activity_pain == 'sometimes'",
+            "show_if": "answers.activity_pain == 'very_often' or answers.activity_pain == 'sometimes'",
             "options": [
                 {
                     "value": "messy_chats",
@@ -383,7 +383,7 @@
             "type": "radio",
             "text": "Wolltest du schon mal freiwillig helfen, wusstest aber nicht wo oder wie?",
             "required": true,
-            "show_if": "answers.volunteer_past_12m == 'never' || answers.volunteer_past_12m == 'sometimes'",
+            "show_if": "answers.volunteer_past_12m == 'never' or answers.volunteer_past_12m == 'sometimes'",
             "options": [
                 {
                     "value": "yes",
@@ -400,7 +400,7 @@
             "type": "radio",
             "text": "Wärst du eher bereit, dich freiwillig zu engagieren, wenn deine Freunde auch mitgehen würden?",
             "required": true,
-            "show_if": "answers.volunteer_past_12m == 'never' || answers.volunteer_past_12m == 'sometimes'",
+            "show_if": "answers.volunteer_past_12m == 'never' or answers.volunteer_past_12m == 'sometimes'",
             "options": [
                 {
                     "value": "yes",
@@ -421,7 +421,7 @@
             "type": "radio",
             "text": "Wie wichtig ist es dir, Anerkennung (Zertifikate, Badges, Lebenslauf-Nachweise, verifizierte Skills) für freiwillige Arbeit zu bekommen?",
             "required": true,
-            "show_if": "answers.volunteer_past_12m == 'never' || answers.volunteer_past_12m == 'sometimes'",
+            "show_if": "answers.volunteer_past_12m == 'never' or answers.volunteer_past_12m == 'sometimes'",
             "options": [
                 {
                     "value": "very_important",
@@ -443,7 +443,7 @@
             "text": "Ordne diese nach Wichtigkeit (wenn du dich freiwillig engagieren würdest):",
             "description": "Ziehe die Optionen in deine bevorzugte Reihenfolge (1 = am wichtigsten)",
             "required": true,
-            "show_if": "answers.volunteer_past_12m == 'never' || answers.volunteer_past_12m == 'sometimes'",
+            "show_if": "answers.volunteer_past_12m == 'never' or answers.volunteer_past_12m == 'sometimes'",
             "options": [
                 {
                     "value": "friends_going",
@@ -664,7 +664,7 @@
             "type": "checkbox",
             "text": "Wenn du dich unwohl fühlst, neuen Gruppen beizutreten – was sind die Hauptgründe?",
             "required": false,
-            "show_if": "answers.social_anxiety_level == 'somewhat_comfortable' || answers.social_anxiety_level == 'uncomfortable' || answers.social_anxiety_level == 'never'",
+            "show_if": "answers.social_anxiety_level == 'somewhat_comfortable' or answers.social_anxiety_level == 'uncomfortable' or answers.social_anxiety_level == 'never'",
             "options": [
                 {
                     "value": "not_knowing_anyone",
@@ -697,7 +697,7 @@
             "type": "radio",
             "text": "Würdest du dich wohler fühlen, einem Gruppen-Event beizutreten, wenn du mit einem erfahrenen 'Buddy' gepaart werden könntest, der dich einführt?",
             "required": true,
-            "show_if": "answers.social_anxiety_level == 'uncomfortable' || answers.social_anxiety_level == 'never'",
+            "show_if": "answers.social_anxiety_level == 'uncomfortable' or answers.social_anxiety_level == 'never'",
             "options": [
                 {
                     "value": "yes_helps",
@@ -922,7 +922,7 @@
             "type": "radio",
             "text": "Wie interessiert bist du daran, das auszuprobieren?",
             "required": true,
-            "show_if": "!answers.core_value_validated?.includes('none')",
+            "show_if": "not answers.core_value_validated in ['none']",
             "options": [
                 {
                     "value": "yes_immediately",

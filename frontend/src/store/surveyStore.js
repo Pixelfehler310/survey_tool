@@ -60,10 +60,29 @@ const useSurveyStore = create(
 
             // Computed: Get progress percentage
             getProgress: () => {
+                const { survey, currentIndex } = get();
+                if (!survey?.questions || survey.questions.length === 0) return 0;
+
+                // Filter out hidden questions from the total count logic to avoid starting > 0%
+                const visibleInDef = survey.questions.filter(q => q.type !== 'hidden');
+                const totalQuestions = visibleInDef.length;
+
+                if (totalQuestions === 0) return 100;
+
+                // Get the currently displayed question
                 const visibleQuestions = get().getVisibleQuestions();
-                const { currentIndex } = get();
-                if (visibleQuestions.length === 0) return 0;
-                return Math.round((currentIndex / visibleQuestions.length) * 100);
+                const currentQuestion = visibleQuestions[currentIndex];
+
+                // If we are past the last question or completed
+                if (!currentQuestion) return 100;
+
+                // Find index of this question in the filtered definition list
+                const absoluteIndex = visibleInDef.findIndex(q => q.id === currentQuestion.id);
+
+                if (absoluteIndex === -1) return 0;
+
+                // Calculate percentage
+                return Math.round((absoluteIndex / totalQuestions) * 100);
             },
 
             // Actions

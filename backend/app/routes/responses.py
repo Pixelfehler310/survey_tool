@@ -112,11 +112,7 @@ async def create_response(
     
     # Determine duplicate prevention mode
     # Support both new 'duplicate_prevention' and legacy 'allow_multiple_responses'
-    dup_mode = settings_dict.get("duplicate_prevention", None)
-    if dup_mode is None:
-        # Fallback to legacy setting
-        allow_multiple = settings_dict.get("allow_multiple_responses", False)
-        dup_mode = "none" if allow_multiple else "client"
+    dup_mode = settings_dict.get("duplicate_prevention", "none")
     
     # Handle duplicate prevention based on mode
     fingerprint_hash = None

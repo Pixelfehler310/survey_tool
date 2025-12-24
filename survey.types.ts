@@ -215,9 +215,13 @@ export interface Question {
    * // Show only if user selected rating 3 or below
    * "show_if": "answers.satisfaction <= 3"
    *
-   * // Show only if user selected specific checkbox option
-   * "show_if": "answers.interests.includes('technology')"
+   * // Show if user selected specific checkbox option (use 'in' operator)
+   * "show_if": "answers.interests in ['technology']"
+   *
+   * // Multiple conditions with 'and'/'or'
+   * "show_if": "answers.age == 'under_18' or answers.age == '18_35'"
    * ```
+
    */
   show_if?: string;
 
@@ -599,13 +603,13 @@ export interface SurveyResponse {
  * - `==` - Equality check
  * - `!=` - Inequality check
  * - `<`, `>`, `<=`, `>=` - Numeric comparisons
- * - `&&` - Logical AND
- * - `||` - Logical OR
- * - `!` - Logical NOT
+ * - `and` - Logical AND (NOTE: use 'and', not '&&')
+ * - `or` - Logical OR (NOTE: use 'or', not '||')
+ * - `not` - Logical NOT
+ * - `in` - Membership check (for arrays/checkbox answers)
  *
- * ## Available Functions
+ * ## Accessing Values
  * - `answers.{id}` - Access answer value for question ID
- * - `answers.{id}.includes('value')` - Check if array contains value (for checkbox)
  *
  * ## Examples
  * ```
@@ -615,16 +619,28 @@ export interface SurveyResponse {
  * // Numeric comparison
  * "answers.age >= 18"
  *
- * // Array includes (checkbox)
- * "answers.interests.includes('technology')"
+ * // Check if checkbox contains a value (use 'in' operator)
+ * "answers.interests in ['technology']"
  *
- * // Combined conditions
- * "answers.country == 'germany' && answers.age >= 18"
+ * // Combined conditions with 'and'
+ * "answers.status == 'student' and answers.age >= 18"
+ *
+ * // Multiple OR conditions
+ * "answers.role == 'admin' or answers.role == 'editor'"
  *
  * // Negation
- * "answers.skip_section != 'yes'"
+ * "not answers.skip_section in ['yes']"
+ *
+ * // Complex: Check if any checkbox value matches
+ * "answers.features in ['dark_mode', 'analytics']"
  * ```
+ *
+ * ## Important Notes
+ * - Use `and` / `or` keywords, NOT `&&` / `||` operators
+ * - Use `value in ['a', 'b']` for array membership, NOT `.includes()`
+ * - String values must be quoted with single quotes: `'value'`
  */
+
 export type ShowIfExpression = string;
 
 // =============================================================================
