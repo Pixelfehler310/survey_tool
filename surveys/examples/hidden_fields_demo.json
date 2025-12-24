@@ -1,0 +1,85 @@
+{
+    "id": "hidden_fields_demo",
+    "title": "Hidden Fields & UTM Tracking Demo",
+    "description": "Demonstrates hidden fields for tracking parameters",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true
+    },
+    "questions": [
+        {
+            "id": "source",
+            "type": "hidden",
+            "text": "Traffic Source"
+        },
+        {
+            "id": "utm_source",
+            "type": "hidden",
+            "text": "UTM Source"
+        },
+        {
+            "id": "utm_medium",
+            "type": "hidden",
+            "text": "UTM Medium"
+        },
+        {
+            "id": "utm_campaign",
+            "type": "hidden",
+            "text": "UTM Campaign"
+        },
+        {
+            "id": "referral_code",
+            "type": "hidden",
+            "text": "Referral Code"
+        },
+        {
+            "id": "welcome",
+            "type": "radio",
+            "text": "Welcome! This survey uses hidden fields to track where you came from.\n\nTry opening this survey with URL parameters like:\n?source=instagram&utm_campaign=summer2024",
+            "options": [
+                {
+                    "value": "continue",
+                    "label": "I understand, continue"
+                }
+            ]
+        },
+        {
+            "id": "how_found",
+            "type": "radio",
+            "text": "How did you find us?",
+            "options": [
+                {
+                    "value": "search",
+                    "label": "Search engine"
+                },
+                {
+                    "value": "social",
+                    "label": "Social media"
+                },
+                {
+                    "value": "friend",
+                    "label": "Friend recommendation"
+                },
+                {
+                    "value": "ad",
+                    "label": "Advertisement"
+                },
+                {
+                    "value": "other",
+                    "label": "Other"
+                }
+            ]
+        },
+        {
+            "id": "experience",
+            "type": "scale",
+            "text": "Rate your experience so far:",
+            "config": {
+                "min": 1,
+                "max": 5,
+                "min_label": "Poor",
+                "max_label": "Excellent"
+            }
+        }
+    ]
+}

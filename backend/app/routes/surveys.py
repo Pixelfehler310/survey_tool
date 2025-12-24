@@ -12,17 +12,30 @@ settings = get_settings()
 
 
 def load_survey_from_file(survey_id: str) -> Optional[dict]:
-    """Load a survey definition from a JSON file."""
+    """Load a survey definition from a JSON file (including subdirectories)."""
     surveys_path = Path(settings.SURVEYS_PATH)
-    survey_file = surveys_path / f"{survey_id}.json"
     
+    # First, try direct path (surveys/{id}.json)
+    survey_file = surveys_path / f"{survey_id}.json"
     if survey_file.exists():
         try:
             with open(survey_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except json.JSONDecodeError:
             return None
+    
+    # Search in subdirectories by filename or by id field
+    for survey_file in surveys_path.glob("**/*.json"):
+        try:
+            with open(survey_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if data.get("id") == survey_id:
+                    return data
+        except json.JSONDecodeError:
+            continue
+    
     return None
+
 
 
 def select_variant(survey_data: dict) -> tuple[dict, Optional[str]]:
@@ -103,7 +116,7 @@ async def list_surveys():
     surveys = []
     
     if surveys_path.exists():
-        for survey_file in surveys_path.glob("*.json"):
+        for survey_file in surveys_path.glob("**/*.json"):
             try:
                 with open(survey_file, "r", encoding="utf-8") as f:
                     data = json.load(f)

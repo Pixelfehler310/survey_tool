@@ -1,0 +1,65 @@
+{
+    "id": "scale_questions_demo",
+    "title": "Scale & Rating Questions Demo",
+    "description": "Demonstrates different scale configurations",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true
+    },
+    "questions": [
+        {
+            "id": "nps",
+            "type": "scale",
+            "text": "How likely are you to recommend us to a friend or colleague?",
+            "required": true,
+            "config": {
+                "min": 0,
+                "max": 10,
+                "min_label": "Not at all likely",
+                "max_label": "Extremely likely"
+            }
+        },
+        {
+            "id": "satisfaction_5",
+            "type": "scale",
+            "text": "How satisfied are you with our product?",
+            "config": {
+                "min": 1,
+                "max": 5,
+                "min_label": "Very dissatisfied",
+                "max_label": "Very satisfied"
+            }
+        },
+        {
+            "id": "agreement",
+            "type": "scale",
+            "text": "I found the product easy to use.",
+            "config": {
+                "min": 1,
+                "max": 7,
+                "min_label": "Strongly disagree",
+                "max_label": "Strongly agree"
+            }
+        },
+        {
+            "id": "effort",
+            "type": "scale",
+            "text": "How much effort did you have to put forth to complete your task?",
+            "config": {
+                "min": 1,
+                "max": 5,
+                "min_label": "Very low effort",
+                "max_label": "Very high effort"
+            }
+        },
+        {
+            "id": "simple_rating",
+            "type": "scale",
+            "text": "Rate this demo survey:",
+            "config": {
+                "min": 1,
+                "max": 5
+            }
+        }
+    ]
+}

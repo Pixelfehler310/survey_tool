@@ -1,0 +1,94 @@
+{
+    "id": "ab_test_demo",
+    "title": "A/B Test Demo",
+    "description": "Demonstrates A/B testing with variants",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true
+    },
+    "questions": [
+        {
+            "id": "baseline_question",
+            "type": "radio",
+            "text": "This question appears in all variants.",
+            "options": [
+                {
+                    "value": "a",
+                    "label": "Option A"
+                },
+                {
+                    "value": "b",
+                    "label": "Option B"
+                }
+            ]
+        }
+    ],
+    "variants": [
+        {
+            "id": "control",
+            "weight": 50,
+            "questions": [
+                {
+                    "id": "variant_question",
+                    "type": "radio",
+                    "text": "[CONTROL] Which color do you prefer?",
+                    "options": [
+                        {
+                            "value": "red",
+                            "label": "Red"
+                        },
+                        {
+                            "value": "blue",
+                            "label": "Blue"
+                        },
+                        {
+                            "value": "green",
+                            "label": "Green"
+                        }
+                    ]
+                },
+                {
+                    "id": "control_specific",
+                    "type": "textarea",
+                    "text": "[CONTROL] Please explain your choice:"
+                }
+            ]
+        },
+        {
+            "id": "treatment_emoji",
+            "weight": 50,
+            "questions": [
+                {
+                    "id": "variant_question",
+                    "type": "radio",
+                    "text": "[TREATMENT] Which color do you prefer?",
+                    "options": [
+                        {
+                            "value": "red",
+                            "label": "🔴 Red"
+                        },
+                        {
+                            "value": "blue",
+                            "label": "🔵 Blue"
+                        },
+                        {
+                            "value": "green",
+                            "label": "🟢 Green"
+                        }
+                    ]
+                },
+                {
+                    "id": "treatment_specific",
+                    "type": "scale",
+                    "text": "[TREATMENT] How much do you like your chosen color?",
+                    "config": {
+                        "min": 1,
+                        "max": 10,
+                        "min_label": "Not much",
+                        "max_label": "Love it!"
+                    }
+                }
+            ]
+        }
+    ]
+}

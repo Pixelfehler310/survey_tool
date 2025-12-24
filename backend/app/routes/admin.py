@@ -334,7 +334,7 @@ async def list_surveys(
     # Get surveys from JSON files
     surveys_path = Path(settings.SURVEYS_PATH)
     if surveys_path.exists():
-        for survey_file in surveys_path.glob("*.json"):
+        for survey_file in surveys_path.glob("**/*.json"):
             try:
                 with open(survey_file, "r", encoding="utf-8") as f:
                     survey_def = json.load(f)

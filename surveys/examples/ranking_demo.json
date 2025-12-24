@@ -1,0 +1,87 @@
+{
+    "id": "ranking_demo",
+    "title": "Ranking & Prioritization Demo",
+    "description": "Demonstrates drag-and-drop ranking questions",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true
+    },
+    "questions": [
+        {
+            "id": "intro_text",
+            "type": "radio",
+            "text": "Welcome! This survey will ask you to rank items by priority. Ready to start?",
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Yes, let's go!"
+                }
+            ]
+        },
+        {
+            "id": "feature_priority",
+            "type": "ranking",
+            "text": "Please rank these features from most important (1) to least important (5):",
+            "required": true,
+            "options": [
+                {
+                    "value": "speed",
+                    "label": "⚡ Speed & Performance"
+                },
+                {
+                    "value": "security",
+                    "label": "🔒 Security & Privacy"
+                },
+                {
+                    "value": "design",
+                    "label": "🎨 Beautiful Design"
+                },
+                {
+                    "value": "price",
+                    "label": "💰 Affordable Pricing"
+                },
+                {
+                    "value": "support",
+                    "label": "🤝 Customer Support"
+                }
+            ]
+        },
+        {
+            "id": "value_ranking",
+            "type": "ranking",
+            "text": "Rank these values in order of personal importance to you:",
+            "options": [
+                {
+                    "value": "family",
+                    "label": "👨‍👩‍👧‍👦 Family"
+                },
+                {
+                    "value": "career",
+                    "label": "💼 Career"
+                },
+                {
+                    "value": "health",
+                    "label": "🏃 Health"
+                },
+                {
+                    "value": "creativity",
+                    "label": "✨ Creativity"
+                },
+                {
+                    "value": "adventure",
+                    "label": "🌍 Adventure"
+                },
+                {
+                    "value": "learning",
+                    "label": "📚 Learning"
+                }
+            ]
+        },
+        {
+            "id": "priority_explain",
+            "type": "textarea",
+            "text": "Why did you rank your top choice as #1?",
+            "required": false
+        }
+    ]
+}

@@ -1,0 +1,54 @@
+{
+    "id": "branding_demo",
+    "title": "Custom Branding Demo",
+    "description": "Demonstrates custom logo and colors",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true,
+        "branding": {
+            "logo_url": "https://via.placeholder.com/200x50/6366f1/ffffff?text=Your+Logo",
+            "primary_color": "#8b5cf6",
+            "background_color": "#faf5ff"
+        },
+        "thank_you": {
+            "title": "Thanks for your feedback!",
+            "message": "Your branded survey is complete."
+        }
+    },
+    "questions": [
+        {
+            "id": "brand_impression",
+            "type": "radio",
+            "text": "What's your first impression of this branded survey?",
+            "options": [
+                {
+                    "value": "professional",
+                    "label": "Very professional"
+                },
+                {
+                    "value": "modern",
+                    "label": "Modern and clean"
+                },
+                {
+                    "value": "colorful",
+                    "label": "Nice and colorful"
+                },
+                {
+                    "value": "neutral",
+                    "label": "No strong opinion"
+                }
+            ]
+        },
+        {
+            "id": "color_preference",
+            "type": "scale",
+            "text": "How much do you like the purple color scheme?",
+            "config": {
+                "min": 1,
+                "max": 5,
+                "min_label": "Not at all",
+                "max_label": "Love it!"
+            }
+        }
+    ]
+}

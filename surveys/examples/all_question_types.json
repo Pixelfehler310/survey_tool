@@ -1,0 +1,123 @@
+{
+    "id": "all_question_types",
+    "title": "All Question Types Reference",
+    "description": "One example of every supported question type",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true
+    },
+    "questions": [
+        {
+            "id": "text_example",
+            "type": "text",
+            "text": "TEXT: Single-line text input",
+            "required": true
+        },
+        {
+            "id": "textarea_example",
+            "type": "textarea",
+            "text": "TEXTAREA: Multi-line text for longer responses"
+        },
+        {
+            "id": "radio_example",
+            "type": "radio",
+            "text": "RADIO: Single choice (select one)",
+            "required": true,
+            "options": [
+                {
+                    "value": "option_a",
+                    "label": "Option A"
+                },
+                {
+                    "value": "option_b",
+                    "label": "Option B"
+                },
+                {
+                    "value": "option_c",
+                    "label": "Option C"
+                }
+            ]
+        },
+        {
+            "id": "checkbox_example",
+            "type": "checkbox",
+            "text": "CHECKBOX: Multiple choice (select all that apply)",
+            "options": [
+                {
+                    "value": "feature_1",
+                    "label": "Feature 1"
+                },
+                {
+                    "value": "feature_2",
+                    "label": "Feature 2"
+                },
+                {
+                    "value": "feature_3",
+                    "label": "Feature 3"
+                },
+                {
+                    "value": "feature_4",
+                    "label": "Feature 4"
+                }
+            ]
+        },
+        {
+            "id": "dropdown_example",
+            "type": "dropdown",
+            "text": "DROPDOWN: Single choice from dropdown menu",
+            "options": [
+                {
+                    "value": "de",
+                    "label": "Germany"
+                },
+                {
+                    "value": "at",
+                    "label": "Austria"
+                },
+                {
+                    "value": "ch",
+                    "label": "Switzerland"
+                },
+                {
+                    "value": "other",
+                    "label": "Other"
+                }
+            ]
+        },
+        {
+            "id": "scale_example",
+            "type": "scale",
+            "text": "SCALE: Numeric rating scale",
+            "config": {
+                "min": 1,
+                "max": 5,
+                "min_label": "Low",
+                "max_label": "High"
+            }
+        },
+        {
+            "id": "ranking_example",
+            "type": "ranking",
+            "text": "RANKING: Drag & drop to order by priority",
+            "options": [
+                {
+                    "value": "first",
+                    "label": "First item"
+                },
+                {
+                    "value": "second",
+                    "label": "Second item"
+                },
+                {
+                    "value": "third",
+                    "label": "Third item"
+                }
+            ]
+        },
+        {
+            "id": "hidden_example",
+            "type": "hidden",
+            "text": "HIDDEN: Auto-filled from URL params (not visible)"
+        }
+    ]
+}

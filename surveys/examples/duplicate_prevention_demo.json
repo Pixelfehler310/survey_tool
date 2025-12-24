@@ -1,0 +1,32 @@
+{
+    "id": "duplicate_prevention_demo",
+    "title": "Duplicate Prevention Demo",
+    "description": "Demonstrates client-side duplicate prevention",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true,
+        "duplicate_prevention": "client",
+        "thank_you": {
+            "title": "Response Recorded!",
+            "message": "Thanks for completing this survey.\n\nNote: You can only submit this survey once per browser. If you try to access it again, you'll see a 'already completed' message."
+        }
+    },
+    "questions": [
+        {
+            "id": "notice",
+            "type": "radio",
+            "text": "This survey uses client-side duplicate prevention.\n\nAfter you submit, you won't be able to submit again from this browser.",
+            "options": [
+                {
+                    "value": "understood",
+                    "label": "I understand"
+                }
+            ]
+        },
+        {
+            "id": "test_answer",
+            "type": "text",
+            "text": "Enter any text (just for testing):"
+        }
+    ]
+}

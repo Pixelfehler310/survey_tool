@@ -1,0 +1,43 @@
+{
+    "id": "thank_you_demo",
+    "title": "Thank You Page Demo",
+    "description": "Demonstrates custom thank-you page with redirect",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true,
+        "thank_you": {
+            "title": "Thank you for your feedback! 🎉",
+            "message": "Your responses have been recorded successfully.\n\nWe really appreciate you taking the time to share your thoughts with us.\n\nYou will be redirected to our website shortly.",
+            "cta_text": "Visit Our Website",
+            "cta_url": "https://example.com",
+            "redirect_delay": 10
+        }
+    },
+    "questions": [
+        {
+            "id": "quick_feedback",
+            "type": "radio",
+            "text": "Was this form easy to complete?",
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Yes, very easy!"
+                },
+                {
+                    "value": "ok",
+                    "label": "It was okay"
+                },
+                {
+                    "value": "no",
+                    "label": "It was difficult"
+                }
+            ]
+        },
+        {
+            "id": "email",
+            "type": "text",
+            "text": "Enter your email to receive updates (optional):",
+            "required": false
+        }
+    ]
+}

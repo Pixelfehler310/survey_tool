@@ -1,0 +1,205 @@
+{
+    "id": "skip_logic_demo",
+    "title": "Skip Logic & Expression Language Demo",
+    "description": "Demonstrates all show_if expression patterns",
+    "settings": {
+        "show_progress": true,
+        "allow_back": true
+    },
+    "questions": [
+        {
+            "id": "intro",
+            "type": "radio",
+            "text": "This survey demonstrates conditional logic. First question: Do you own a pet?",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Yes, I have a pet"
+                },
+                {
+                    "value": "no",
+                    "label": "No pets"
+                }
+            ]
+        },
+        {
+            "id": "pet_type",
+            "type": "radio",
+            "text": "What type of pet do you have?",
+            "show_if": "answers.intro == 'yes'",
+            "options": [
+                {
+                    "value": "dog",
+                    "label": "🐕 Dog"
+                },
+                {
+                    "value": "cat",
+                    "label": "🐈 Cat"
+                },
+                {
+                    "value": "other",
+                    "label": "🐾 Other"
+                }
+            ]
+        },
+        {
+            "id": "dog_breed",
+            "type": "text",
+            "text": "What breed is your dog?",
+            "show_if": "answers.pet_type == 'dog'"
+        },
+        {
+            "id": "cat_indoor",
+            "type": "radio",
+            "text": "Is your cat an indoor or outdoor cat?",
+            "show_if": "answers.pet_type == 'cat'",
+            "options": [
+                {
+                    "value": "indoor",
+                    "label": "Indoor only"
+                },
+                {
+                    "value": "outdoor",
+                    "label": "Outdoor only"
+                },
+                {
+                    "value": "both",
+                    "label": "Both"
+                }
+            ]
+        },
+        {
+            "id": "other_pet_description",
+            "type": "textarea",
+            "text": "Please describe your pet:",
+            "show_if": "answers.pet_type == 'other'"
+        },
+        {
+            "id": "age",
+            "type": "radio",
+            "text": "What is your age group?",
+            "required": true,
+            "options": [
+                {
+                    "value": "under_18",
+                    "label": "Under 18"
+                },
+                {
+                    "value": "18_35",
+                    "label": "18-35"
+                },
+                {
+                    "value": "36_55",
+                    "label": "36-55"
+                },
+                {
+                    "value": "over_55",
+                    "label": "Over 55"
+                }
+            ]
+        },
+        {
+            "id": "parent_permission",
+            "type": "radio",
+            "text": "Do you have permission from a parent/guardian to take this survey?",
+            "show_if": "answers.age == 'under_18'",
+            "required": true,
+            "options": [
+                {
+                    "value": "yes",
+                    "label": "Yes"
+                },
+                {
+                    "value": "no",
+                    "label": "No"
+                }
+            ]
+        },
+        {
+            "id": "satisfaction",
+            "type": "scale",
+            "text": "How satisfied are you with our service?",
+            "required": true,
+            "config": {
+                "min": 1,
+                "max": 5,
+                "min_label": "Very unsatisfied",
+                "max_label": "Very satisfied"
+            }
+        },
+        {
+            "id": "improvement_suggestion",
+            "type": "textarea",
+            "text": "What could we improve? (You rated us low)",
+            "show_if": "answers.satisfaction <= 2"
+        },
+        {
+            "id": "positive_feedback",
+            "type": "textarea",
+            "text": "Great! What do you like most about us?",
+            "show_if": "answers.satisfaction >= 4"
+        },
+        {
+            "id": "interests",
+            "type": "checkbox",
+            "text": "What topics interest you? (Select all that apply)",
+            "options": [
+                {
+                    "value": "technology",
+                    "label": "Technology"
+                },
+                {
+                    "value": "sports",
+                    "label": "Sports"
+                },
+                {
+                    "value": "music",
+                    "label": "Music"
+                },
+                {
+                    "value": "travel",
+                    "label": "Travel"
+                }
+            ]
+        },
+        {
+            "id": "tech_preference",
+            "type": "radio",
+            "text": "Which tech area interests you most?",
+            "show_if": "answers.interests.includes('technology')",
+            "options": [
+                {
+                    "value": "ai",
+                    "label": "Artificial Intelligence"
+                },
+                {
+                    "value": "web",
+                    "label": "Web Development"
+                },
+                {
+                    "value": "mobile",
+                    "label": "Mobile Apps"
+                }
+            ]
+        },
+        {
+            "id": "travel_destination",
+            "type": "text",
+            "text": "What's your dream travel destination?",
+            "show_if": "answers.interests.includes('travel')"
+        },
+        {
+            "id": "combined_check",
+            "type": "textarea",
+            "text": "You're interested in both tech AND music! Tell us about your favorite music tech:",
+            "show_if": "answers.interests.includes('technology') && answers.interests.includes('music')"
+        },
+        {
+            "id": "final_comments",
+            "type": "textarea",
+            "text": "Any final comments?",
+            "required": false
+        }
+    ]
+}
