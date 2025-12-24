@@ -6,7 +6,7 @@ from slowapi.errors import RateLimitExceeded
 
 from .config import get_settings
 from .database import init_db
-from .routes import surveys, responses, admin, analytics, setup
+from .routes import surveys, responses, admin, analytics, setup, events
 from .rate_limit import limiter
 
 settings = get_settings()
@@ -53,6 +53,7 @@ app.add_middleware(
 app.include_router(setup.router, prefix="/api/v1")
 app.include_router(surveys.router, prefix="/api/v1")
 app.include_router(responses.router, prefix="/api/v1")
+app.include_router(events.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1/admin")
 app.include_router(analytics.router, prefix="/api/v1/admin")
 

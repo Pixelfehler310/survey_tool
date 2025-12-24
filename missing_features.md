@@ -110,7 +110,114 @@ Dieses Dokument sammelt alle offenen Feature-Ideen und Verbesserungsvorschläge 
 
 ---
 
-## 🔒 Sicherheit & Compliance
+## � Partial Responses (Detailkonzept)
+
+### Was ist das Problem?
+
+Aktuell werden Antworten nur bei Submit gespeichert. Wenn ein Nutzer bei Frage 25 von 40 abbricht, gehen alle Daten verloren. Bei langen Umfragen (wie der Civic OS Validation Survey mit 45 Fragen) ist das ein signifikanter Datenverlust.
+
+### Warum ist das wichtig?
+
+1. **Datenrettung** – Partielle Daten sind besser als keine Daten
+2. **Drop-off-Analyse** – Verstehen, bei welcher Frage Nutzer abbrechen (UX-Problem? Zu persönliche Frage?)
+3. **Funnel-Optimierung** – Conversion Rate von "Umfrage gestartet" zu "Umfrage abgeschlossen" messen
+4. **A/B-Testing** – Testen ob kürzere Versionen bessere Completion Rates haben
+
+### Implementierungsoptionen
+
+#### Option A: Auto-Save bei jeder Frage (empfohlen)
+
+```
+Frontend: Bei jedem "Weiter"-Klick → PATCH /api/responses/{partial_id}
+Backend: Speichert in separater PartialResponse-Tabelle
+Submit: Verschiebt von PartialResponse → Response, markiert als completed
+```
+
+**Vorteile:**
+
+- Nutzer kann später weitermachen (mit Link/Token)
+- Maximale Datenrettung
+- Genaue Drop-off-Analyse möglich
+
+**Nachteile:**
+
+- Mehr API-Calls
+- Komplexere Datenbankstruktur
+- Privacy-Bedenken (Daten vor explizitem Consent gespeichert)
+
+#### Option B: LocalStorage + Beacon API
+
+```
+Frontend: Speichert Fortschritt in LocalStorage
+Bei Page-Close: navigator.sendBeacon() sendet Partial-Daten
+Backend: Speichert als "abandoned" Response
+```
+
+**Vorteile:**
+
+- Weniger API-Calls
+- Funktioniert offline
+- Privacy-freundlicher
+
+**Nachteile:**
+
+- Beacon-Daten können verloren gehen
+- Kein Cross-Device Resume
+
+#### Option C: Nur Tracking (kein Resume)
+
+```
+Frontend: Sendet nur Event: "user_reached_question_15"
+Backend: Speichert Progress-Events separat
+```
+
+**Vorteile:**
+
+- Minimal invasiv
+- Keine Partial-Daten-Probleme
+- Reicht für Drop-off-Analyse
+
+**Nachteile:**
+
+- Keine Datenrettung
+- Kein Resume möglich
+
+### Vorgeschlagene Features
+
+- [ ] **Auto-Save Toggle** – Per Survey konfigurierbar (`"auto_save": true`)
+- [ ] **Resume-Link** – Nutzer bekommt Link um später weiterzumachen
+- [ ] **Partial Response Status** – `in_progress`, `abandoned`, `completed`
+- [ ] **Timeout-Erkennung** – Nach 30min Inaktivität als "abandoned" markieren
+- [ ] **Drop-off Heatmap** – Visualisierung: Bei welcher Frage brechen wie viele ab?
+- [ ] **Partial Exclusion** – Option: Partial Responses aus Analyse ausschließen
+- [ ] **DSGVO-Hinweis** – Bei Auto-Save: "Deine Antworten werden automatisch gespeichert"
+
+### Datenmodell
+
+```python
+class PartialResponse(Base):
+    id = Column(UUID, primary_key=True)
+    survey_id = Column(String)
+    session_token = Column(String, unique=True)  # For resume
+    answers = Column(JSON)  # Current answers
+    current_question = Column(Integer)  # Last answered question index
+    started_at = Column(DateTime)
+    last_activity = Column(DateTime)
+    status = Column(Enum: 'in_progress', 'abandoned', 'completed')
+    completed_at = Column(DateTime, nullable=True)
+```
+
+### Priorisierung
+
+| Feature                       | Aufwand | Priorität       |
+| ----------------------------- | ------- | --------------- |
+| Drop-off Tracking (Option C)  | 2h      | 🟡 Mittel       |
+| Auto-Save + Resume (Option A) | 6-8h    | 🟢 Nice-to-have |
+| Drop-off Heatmap              | 3h      | 🟢 Nice-to-have |
+
+---
+
+## �🔒 Sicherheit & Compliance
 
 ### Erweiterte Duplikat-Erkennung
 

@@ -2,11 +2,19 @@
  * Dashboard - Main admin dashboard with charts and stats
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import useAdminStore from "../../store/adminStore";
 import ThemeToggle from "../../components/ThemeToggle";
+
+const DATE_RANGE_OPTIONS = [
+  { value: "all", label: "Alle Zeiträume" },
+  { value: "today", label: "Heute" },
+  { value: "7d", label: "Letzte 7 Tage" },
+  { value: "30d", label: "Letzte 30 Tage" },
+  { value: "custom", label: "Benutzerdefiniert..." },
+];
 
 const COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e", "#10b981", "#f59e0b"];
 
@@ -31,6 +39,9 @@ export default function Dashboard() {
   } = useAdminStore();
 
   const [selectedSurvey, setSelectedSurvey] = useState("");
+  const [dateRange, setDateRange] = useState("all");
+  const [customDateStart, setCustomDateStart] = useState("");
+  const [customDateEnd, setCustomDateEnd] = useState("");
 
   // Load surveys on mount
   useEffect(() => {
@@ -59,8 +70,43 @@ export default function Dashboard() {
     }
   }, [selectedSurvey]);
 
-  // Filter responses by selected survey
-  const filteredResponses = selectedSurvey ? responses.filter((r) => r.survey_id === selectedSurvey) : responses;
+  // Filter responses by selected survey and date range
+  const filteredResponses = useMemo(() => {
+    let filtered = selectedSurvey ? responses.filter((r) => r.survey_id === selectedSurvey) : responses;
+
+    if (dateRange !== "all") {
+      const now = new Date();
+      let startDate;
+      let endDate = new Date();
+
+      switch (dateRange) {
+        case "today":
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case "7d":
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case "30d":
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case "custom":
+          startDate = customDateStart ? new Date(customDateStart) : null;
+          endDate = customDateEnd ? new Date(customDateEnd + "T23:59:59") : new Date();
+          break;
+        default:
+          startDate = null;
+      }
+
+      if (startDate) {
+        filtered = filtered.filter((r) => {
+          const responseDate = new Date(r.created_at);
+          return responseDate >= startDate && responseDate <= endDate;
+        });
+      }
+    }
+
+    return filtered;
+  }, [responses, selectedSurvey, dateRange, customDateStart, customDateEnd]);
 
   // Process data for charts
   const responsesPerDay = filteredResponses.reduce((acc, r) => {
@@ -86,6 +132,98 @@ export default function Dashboard() {
     name,
     value,
   }));
+
+  // Compute question analysis from filtered responses (respects date filter)
+  const computedQuestionAnalysis = useMemo(() => {
+    if (!questionAnalysis?.questions) {
+      return null;
+    }
+
+    if (filteredResponses.length === 0) {
+      // No responses in filter - show all questions with 0 counts
+      return {
+        ...questionAnalysis,
+        total_responses: 0,
+        questions: questionAnalysis.questions.map((q) => ({
+          ...q,
+          total_answers: 0,
+          distribution: q.distribution.map((d) => ({ ...d, count: 0, percentage: 0 })),
+          stats: null,
+        })),
+      };
+    }
+
+    // Build analysis from filtered responses
+    const questionData = {};
+
+    filteredResponses.forEach((response) => {
+      if (!response.answers) return;
+
+      Object.entries(response.answers).forEach(([questionId, answer]) => {
+        if (!questionData[questionId]) {
+          questionData[questionId] = { values: [], distribution: {} };
+        }
+
+        questionData[questionId].values.push(answer);
+
+        if (Array.isArray(answer)) {
+          answer.forEach((item) => {
+            const key = String(item);
+            questionData[questionId].distribution[key] = (questionData[questionId].distribution[key] || 0) + 1;
+          });
+        } else {
+          const key = String(answer);
+          questionData[questionId].distribution[key] = (questionData[questionId].distribution[key] || 0) + 1;
+        }
+      });
+    });
+
+    // Merge with backend metadata (for labels, options, question text)
+    const mergedQuestions = questionAnalysis.questions.map((q) => {
+      const data = questionData[q.question_id];
+
+      // Get total answers for THIS question from filtered data
+      const totalAnswers = data ? data.values.length : 0;
+
+      // Rebuild distribution with filtered counts, preserving labels from backend
+      const updatedDistribution = q.distribution.map((d) => {
+        const count = data?.distribution[d.value] || 0;
+        return {
+          ...d,
+          count,
+          percentage: totalAnswers > 0 ? Math.round((count / totalAnswers) * 1000) / 10 : 0,
+        };
+      });
+
+      // Calculate stats for numeric values
+      let stats = null;
+      if (data) {
+        const numericValues = data.values.filter((v) => typeof v === "number");
+        if (numericValues.length > 0) {
+          const sorted = [...numericValues].sort((a, b) => a - b);
+          stats = {
+            average: Math.round((numericValues.reduce((a, b) => a + b, 0) / numericValues.length) * 100) / 100,
+            min: Math.min(...numericValues),
+            max: Math.max(...numericValues),
+            median: sorted[Math.floor(sorted.length / 2)],
+          };
+        }
+      }
+
+      return {
+        ...q,
+        total_answers: totalAnswers,
+        distribution: updatedDistribution,
+        stats,
+      };
+    });
+
+    return {
+      ...questionAnalysis,
+      total_responses: filteredResponses.length,
+      questions: mergedQuestions,
+    };
+  }, [questionAnalysis, filteredResponses]);
 
   const handleLogout = () => {
     logout();
@@ -117,20 +255,63 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Survey Selector */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Umfrage auswählen</label>
-          <select
-            value={selectedSurvey}
-            onChange={(e) => setSelectedSurvey(e.target.value)}
-            className="w-full md:w-auto px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          >
-            {surveys.map((survey) => (
-              <option key={survey.id} value={survey.id}>
-                {survey.title} ({survey.response_count} Responses)
-              </option>
-            ))}
-          </select>
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          {/* Survey Selector */}
+          <div>
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Umfrage</label>
+            <select
+              value={selectedSurvey}
+              onChange={(e) => setSelectedSurvey(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              {surveys.map((survey) => (
+                <option key={survey.id} value={survey.id}>
+                  {survey.title} ({survey.response_count})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date Range Filter */}
+          <div>
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Zeitraum</label>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              {DATE_RANGE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Custom Date Range */}
+          {dateRange === "custom" && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Von</label>
+                <input
+                  type="date"
+                  value={customDateStart}
+                  onChange={(e) => setCustomDateStart(e.target.value)}
+                  className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Bis</label>
+                <input
+                  type="date"
+                  value={customDateEnd}
+                  onChange={(e) => setCustomDateEnd(e.target.value)}
+                  className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -220,11 +401,11 @@ export default function Dashboard() {
         </div>
 
         {/* Question Analysis - Scroll Feed */}
-        {questionAnalysis && questionAnalysis.questions && questionAnalysis.questions.length > 0 && (
+        {computedQuestionAnalysis && computedQuestionAnalysis.questions && computedQuestionAnalysis.questions.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">📊 Fragen-Analyse</h3>
+            <h3 className="text-lg font-semibold mb-4">📊 Fragen-Analyse ({filteredResponses.length} Responses)</h3>
             <div className="space-y-4">
-              {questionAnalysis.questions.map((question, index) => (
+              {computedQuestionAnalysis.questions.map((question, index) => (
                 <div key={question.question_id} className="card">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -246,17 +427,18 @@ export default function Dashboard() {
 
                   {/* Distribution bars */}
                   <div className="space-y-2">
-                    {question.distribution.slice(0, 8).map((item, i) => (
+                    {question.distribution.slice(0, 10).map((item, i) => (
                       <div key={item.value} className="flex items-center gap-3">
-                        <div className="w-24 text-sm text-slate-600 dark:text-slate-400 truncate" title={item.value}>
-                          {item.value}
+                        <div className="w-32 text-sm text-slate-600 dark:text-slate-400 truncate" title={item.label || item.value}>
+                          {item.label || item.value}
                         </div>
                         <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all duration-500"
                             style={{
-                              width: `${item.percentage}%`,
+                              width: `${Math.max(item.percentage, 2)}%`,
                               backgroundColor: COLORS[i % COLORS.length],
+                              minWidth: item.count > 0 ? "8px" : "0",
                             }}
                           />
                         </div>
@@ -266,7 +448,8 @@ export default function Dashboard() {
                         </div>
                       </div>
                     ))}
-                    {question.distribution.length > 8 && <p className="text-sm text-slate-400 italic">+{question.distribution.length - 8} weitere Optionen</p>}
+
+                    {question.distribution.length > 10 && <p className="text-sm text-slate-400 italic">+{question.distribution.length - 10} weitere Optionen</p>}
                   </div>
                 </div>
               ))}

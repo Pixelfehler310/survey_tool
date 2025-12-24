@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import useSurveyStore from "../store/surveyStore";
 import { loadSurvey, submitResponse, generateFingerprint } from "../lib/surveyEngine";
@@ -15,8 +15,35 @@ export default function Survey() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
-  const [submittedSurvey, setSubmittedSurvey] = useState(null); // Store survey for thank-you page
+  const [submittedSurvey, setSubmittedSurvey] = useState(null);
   const [countdown, setCountdown] = useState(0);
+
+  // Session ID for event tracking (drop-off analysis)
+  const sessionIdRef = useRef(crypto.randomUUID());
+  const lastTrackedQuestionRef = useRef(-1);
+
+  // Track survey events (for drop-off analysis)
+  const trackEvent = useCallback(
+    (eventType, questionIndex = null, questionId = null) => {
+      try {
+        fetch("/api/v1/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: sessionIdRef.current,
+            survey_id: surveyId,
+            event_type: eventType,
+            question_index: questionIndex,
+            question_id: questionId,
+          }),
+          keepalive: true, // Ensures request completes even if tab closes
+        });
+      } catch (e) {
+        // Silently fail - tracking should not break the survey
+      }
+    },
+    [surveyId]
+  );
 
   const {
     survey,
@@ -84,6 +111,8 @@ export default function Survey() {
         // Check for client-side duplicate before showing survey
         if (!checkClientDuplicate(data.settings)) {
           setSurvey(data);
+          // Track survey start
+          trackEvent("started", 0, data.questions?.[0]?.id);
         }
       } catch (err) {
         setError(err.message || "Umfrage konnte nicht geladen werden.");
@@ -97,7 +126,7 @@ export default function Survey() {
     return () => {
       // Don't reset on unmount to preserve progress
     };
-  }, [surveyId]);
+  }, [surveyId, trackEvent]);
 
   // Auto-fill hidden fields from URL parameters
   useEffect(() => {
@@ -118,6 +147,18 @@ export default function Survey() {
       }
     });
   }, [survey, searchParams, setAnswer]);
+
+  // Track progress when user navigates to new questions
+  useEffect(() => {
+    if (!survey || currentIndex <= 0) return;
+
+    // Only track if this is a new question we haven't tracked yet
+    if (currentIndex > lastTrackedQuestionRef.current) {
+      lastTrackedQuestionRef.current = currentIndex;
+      const question = getCurrentQuestion();
+      trackEvent("progress", currentIndex, question?.id);
+    }
+  }, [currentIndex, survey, trackEvent, getCurrentQuestion]);
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -147,6 +188,9 @@ export default function Survey() {
       }
 
       await submitResponse(data);
+
+      // Track completion event
+      trackEvent("completed", currentIndex, getCurrentQuestion()?.id);
 
       // Mark as completed for client-side duplicate prevention
       markAsCompleted(survey?.settings);

@@ -450,16 +450,56 @@ async def get_all_question_analytics(
     for question_id, data in question_analytics.items():
         meta = questions_meta.get(question_id, {})
         total_answers = len(data["values"])
+        defined_options = meta.get("options", [])
+        question_type = meta.get("type", "")
         
-        # Calculate distribution with percentages
-        distribution = [
-            {
-                "value": value,
-                "count": count,
-                "percentage": round((count / total_answers) * 100, 1) if total_answers > 0 else 0
+        # Start with all defined options (ensures 0-count options are shown)
+        distribution_dict = {}
+        for opt in defined_options:
+            distribution_dict[opt["value"]] = {
+                "value": opt["value"],
+                "label": opt.get("label", opt["value"]),
+                "count": 0,
+                "percentage": 0
             }
-            for value, count in sorted(data["distribution"].items(), key=lambda x: x[1], reverse=True)
-        ]
+        
+        # Update with actual counts
+        for value, count in data["distribution"].items():
+            if value in distribution_dict:
+                distribution_dict[value]["count"] = count
+                distribution_dict[value]["percentage"] = round((count / total_answers) * 100, 1) if total_answers > 0 else 0
+            else:
+                # Answer exists but wasn't in defined options (e.g., text input)
+                distribution_dict[value] = {
+                    "value": value,
+                    "label": value,
+                    "count": count,
+                    "percentage": round((count / total_answers) * 100, 1) if total_answers > 0 else 0
+                }
+        
+        # Sort based on question type
+        if question_type == "scale":
+            # Numeric sorting for scale questions (1, 2, 3, 4, 5)
+            def sort_key(item):
+                try:
+                    return (0, int(item["value"]))
+                except (ValueError, TypeError):
+                    return (1, str(item["value"]))
+            distribution = sorted(distribution_dict.values(), key=sort_key)
+        elif defined_options:
+            # Preserve original option order for radio/checkbox/dropdown
+            option_order = {opt["value"]: i for i, opt in enumerate(defined_options)}
+            distribution = sorted(
+                distribution_dict.values(), 
+                key=lambda x: option_order.get(x["value"], 999)
+            )
+        else:
+            # No defined options (text fields) - sort by count descending
+            distribution = sorted(
+                distribution_dict.values(), 
+                key=lambda x: x["count"], 
+                reverse=True
+            )
         
         question_result = {
             "question_id": question_id,
