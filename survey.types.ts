@@ -349,6 +349,23 @@ export interface SurveySettings {
   show_progress?: boolean;
 
   /**
+   * Where to store survey progress.
+   *
+   * Privacy Implications:
+   * - 'local' (Default): Uses localStorage. Survives browser restart.
+   *   ⚠️ GDPR-Note: Data persists on device. Pro: User comfort. Con: Risk on shared devices.
+   *
+   * - 'session': Uses sessionStorage. Cleared when tab/window closed.
+   *   ✅ Recommended for sensitive data. Balances UX (reload works) and privacy.
+   *
+   * - 'none': Memory only. Cleared on reload.
+   *   🛡️ Maximum Privacy. No data ever touches the disk. Con: Progress lost on reload.
+   *
+   * @default 'local'
+   */
+  storage?: "local" | "session" | "none";
+
+  /**
    * Allow users to navigate back to previous questions.
    * @default true
    */

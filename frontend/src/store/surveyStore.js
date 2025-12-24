@@ -3,7 +3,7 @@
  */
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { getVisibleQuestions, validateAnswer, serializeAnswers } from '../lib/surveyEngine';
 
 const useSurveyStore = create(
@@ -179,6 +179,43 @@ const useSurveyStore = create(
         }),
         {
             name: 'survey-storage',
+            storage: createJSONStorage(() => ({
+                getItem: (name) => {
+                    // Check session first, then local
+                    const fromSession = sessionStorage.getItem(name);
+                    if (fromSession) return JSON.parse(fromSession);
+
+                    const fromLocal = localStorage.getItem(name);
+                    return fromLocal ? JSON.parse(fromLocal) : null;
+                },
+                setItem: (name, value) => {
+                    // Inspect the state to find the setting
+                    // value structure is { state: { survey: { settings: { storage: '...' } } }, version: 0 }
+                    const settings = value?.state?.survey?.settings;
+                    const mode = settings?.storage || 'local';
+
+                    if (mode === 'none') {
+                        // Memory only: clear potential leftovers from other modes
+                        sessionStorage.removeItem(name);
+                        localStorage.removeItem(name);
+                        return;
+                    }
+
+                    if (mode === 'session') {
+                        sessionStorage.setItem(name, JSON.stringify(value));
+                        // Cleanup local if it exists to prevent "ghost" data
+                        localStorage.removeItem(name);
+                    } else {
+                        localStorage.setItem(name, JSON.stringify(value));
+                        // Cleanup session if it exists
+                        sessionStorage.removeItem(name);
+                    }
+                },
+                removeItem: (name) => {
+                    sessionStorage.removeItem(name);
+                    localStorage.removeItem(name);
+                },
+            })),
             partialize: (state) => ({
                 // Only persist answers and current index
                 answers: state.answers,
@@ -186,6 +223,22 @@ const useSurveyStore = create(
                 startedAt: state.startedAt,
                 // Store survey ID for partial save matching
                 surveyId: state.survey?.id,
+                // We must persist the survey settings minimally (or get them) to know the storage mode on reload?
+                // Actually, the whole survey object is needed in the state to check settings in setItem, 
+                // but we only persist partial data. 
+                // WAIT: If we only persist partial data, 'value.state.survey' in setItem will be undefined 
+                // if we don't include it in partialize!
+
+                // However, the survey definition is usually re-fetched on mount.
+                // But `setItem` is called whenever state changes.
+                // If we don't persist 'survey', `value.state.survey` will be missing in the object passed to setItem.
+
+                // Fix: We need to include the settings in the persisted state OR ensure the store has them.
+                // Let's include survey.settings in the persisted part so the adapter can read it.
+                survey: {
+                    id: state.survey?.id,
+                    settings: state.survey?.settings
+                }
             }),
         }
     )
