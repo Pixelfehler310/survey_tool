@@ -26,6 +26,7 @@ export default function Dashboard() {
     stats,
     surveys,
     questionAnalysis,
+    dropoffAnalysis,
     isLoading,
     error,
     totalCount,
@@ -33,6 +34,7 @@ export default function Dashboard() {
     fetchStats,
     fetchSurveys,
     fetchQuestionAnalysis,
+    fetchDropoffAnalysis,
     exportData,
     logout,
     setFilters,
@@ -67,6 +69,7 @@ export default function Dashboard() {
     if (selectedSurvey) {
       fetchStats(selectedSurvey);
       fetchQuestionAnalysis(selectedSurvey);
+      fetchDropoffAnalysis(selectedSurvey);
       setFilters({ survey_id: selectedSurvey, source: "", date_from: "", date_to: "" });
       fetchResponses();
     }
@@ -319,12 +322,12 @@ export default function Dashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="card">
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Gesamt Responses</p>
-            <p className="text-3xl font-bold">{filteredResponses.length}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Gestartet</p>
+            <p className="text-3xl font-bold">{dropoffAnalysis?.total_started || filteredResponses.length}</p>
           </div>
           <div className="card">
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Abgeschlossen</p>
-            <p className="text-3xl font-bold text-green-600">{filteredResponses.filter((r) => r.completed_at).length}</p>
+            <p className="text-3xl font-bold text-green-600">{dropoffAnalysis?.total_completed || filteredResponses.filter((r) => r.completed_at).length}</p>
           </div>
           <div className="card">
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Heute</p>
@@ -339,7 +342,9 @@ export default function Dashboard() {
           </div>
           <div className="card">
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Completion Rate</p>
-            <p className="text-3xl font-bold">{filteredResponses.length > 0 ? Math.round((filteredResponses.filter((r) => r.completed_at).length / filteredResponses.length) * 100) : 0}%</p>
+            <p className="text-3xl font-bold">
+              {dropoffAnalysis?.completion_rate ?? (filteredResponses.length > 0 ? Math.round((filteredResponses.filter((r) => r.completed_at).length / filteredResponses.length) * 100) : 0)}%
+            </p>
           </div>
         </div>
 
@@ -401,6 +406,59 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Drop-off Funnel Analysis */}
+        {dropoffAnalysis && dropoffAnalysis.total_started > 0 && (
+          <div className="card mb-8">
+            <h3 className="text-lg font-semibold mb-4">📉 Drop-off Analyse</h3>
+
+            {/* Key Metrics */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">{dropoffAnalysis.total_started}</div>
+                <div className="text-sm text-slate-500">Gestartet</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{dropoffAnalysis.total_completed}</div>
+                <div className="text-sm text-slate-500">Abgeschlossen</div>
+              </div>
+              <div className="text-center p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-indigo-600">{dropoffAnalysis.completion_rate}%</div>
+                <div className="text-sm text-slate-500">Completion Rate</div>
+              </div>
+            </div>
+
+            {/* Drop-off Points */}
+            {dropoffAnalysis.dropoff_by_question && dropoffAnalysis.dropoff_by_question.length > 0 ? (
+              <div>
+                <h4 className="text-sm font-medium text-slate-500 mb-3">Abbrüche pro Frage:</h4>
+                <div className="space-y-2">
+                  {dropoffAnalysis.dropoff_by_question.map((item, i) => (
+                    <div key={item.question_index} className="flex items-center gap-3">
+                      <div className="w-20 text-sm text-slate-600 dark:text-slate-400">Frage {item.question_index + 1}</div>
+                      <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-red-500 transition-all duration-500"
+                          style={{
+                            width: `${Math.max(item.percentage, 3)}%`,
+                            minWidth: item.count > 0 ? "12px" : "0",
+                          }}
+                        />
+                      </div>
+                      <div className="w-24 text-sm text-right">
+                        <span className="font-medium text-red-600">{item.count}</span>
+                        <span className="text-slate-400 ml-1">({item.percentage}%)</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-400 mt-3 italic">Zeigt an, bei welcher Frage wie viele Nutzer die Umfrage abgebrochen haben.</p>
+              </div>
+            ) : (
+              <p className="text-sm text-green-600 italic">🎉 Keine Abbrüche erfasst - alle Teilnehmer haben abgeschlossen!</p>
+            )}
+          </div>
+        )}
 
         {/* Question Analysis - Scroll Feed */}
         {computedQuestionAnalysis && computedQuestionAnalysis.questions && computedQuestionAnalysis.questions.length > 0 && (

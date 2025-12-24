@@ -17,6 +17,7 @@ const useAdminStore = create(
             stats: null,
             surveys: [],
             questionAnalysis: null,
+            dropoffAnalysis: null,
             isLoading: false,
             error: null,
 
@@ -149,6 +150,19 @@ const useAdminStore = create(
                     set({ questionAnalysis: data });
                 } catch (error) {
                     console.error('Failed to fetch question analysis:', error);
+                }
+            },
+
+            fetchDropoffAnalysis: async (surveyId) => {
+                const { authFetch } = get();
+                set({ dropoffAnalysis: null });
+
+                try {
+                    const response = await authFetch(`/api/v1/admin/analytics/dropoff/${surveyId}`);
+                    const data = await response.json();
+                    set({ dropoffAnalysis: data });
+                } catch (error) {
+                    console.error('Failed to fetch dropoff analysis:', error);
                 }
             },
 
