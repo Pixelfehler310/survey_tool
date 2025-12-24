@@ -2,7 +2,7 @@
  * Dashboard - Main admin dashboard with charts and stats
  */
 
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import useAdminStore from "../../store/adminStore";
@@ -42,6 +42,8 @@ export default function Dashboard() {
   const [dateRange, setDateRange] = useState("all");
   const [customDateStart, setCustomDateStart] = useState("");
   const [customDateEnd, setCustomDateEnd] = useState("");
+  const [expandedResponseId, setExpandedResponseId] = useState(null);
+  const [isAnalysisExpanded, setIsAnalysisExpanded] = useState(true);
 
   // Load surveys on mount
   useEffect(() => {
@@ -403,57 +405,66 @@ export default function Dashboard() {
         {/* Question Analysis - Scroll Feed */}
         {computedQuestionAnalysis && computedQuestionAnalysis.questions && computedQuestionAnalysis.questions.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-4">📊 Fragen-Analyse ({filteredResponses.length} Responses)</h3>
-            <div className="space-y-4">
-              {computedQuestionAnalysis.questions.map((question, index) => (
-                <div key={question.question_id} className="card">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">Frage {index + 1}</span>
-                      <h4 className="font-medium">{question.text || question.question_id}</h4>
-                    </div>
-                    <span className="text-sm text-slate-500">{question.total_answers} Antworten</span>
-                  </div>
-
-                  {/* Stats for numeric questions */}
-                  {question.stats && (
-                    <div className="flex gap-4 mb-3 text-sm">
-                      <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded">Ø {question.stats.average}</span>
-                      <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">Min: {question.stats.min}</span>
-                      <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">Max: {question.stats.max}</span>
-                      <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">Median: {question.stats.median}</span>
-                    </div>
-                  )}
-
-                  {/* Distribution bars */}
-                  <div className="space-y-2">
-                    {question.distribution.slice(0, 10).map((item, i) => (
-                      <div key={item.value} className="flex items-center gap-3">
-                        <div className="w-32 text-sm text-slate-600 dark:text-slate-400 truncate" title={item.label || item.value}>
-                          {item.label || item.value}
-                        </div>
-                        <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${Math.max(item.percentage, 2)}%`,
-                              backgroundColor: COLORS[i % COLORS.length],
-                              minWidth: item.count > 0 ? "8px" : "0",
-                            }}
-                          />
-                        </div>
-                        <div className="w-16 text-sm text-right">
-                          <span className="font-medium">{item.percentage}%</span>
-                          <span className="text-slate-400 ml-1">({item.count})</span>
-                        </div>
-                      </div>
-                    ))}
-
-                    {question.distribution.length > 10 && <p className="text-sm text-slate-400 italic">+{question.distribution.length - 10} weitere Optionen</p>}
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center justify-between mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsAnalysisExpanded(!isAnalysisExpanded)}>
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <span className={`transition-transform duration-200 inline-block ${isAnalysisExpanded ? "rotate-90" : ""}`}>▶</span>
+                📊 Fragen-Analyse ({filteredResponses.length} Responses)
+              </h3>
+              <span className="text-sm text-slate-500">{isAnalysisExpanded ? "Einklappen" : "Ausklappen"}</span>
             </div>
+
+            {isAnalysisExpanded && (
+              <div className="space-y-4">
+                {computedQuestionAnalysis.questions.map((question, index) => (
+                  <div key={question.question_id} className="card">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">Frage {index + 1}</span>
+                        <h4 className="font-medium">{question.text || question.question_id}</h4>
+                      </div>
+                      <span className="text-sm text-slate-500">{question.total_answers} Antworten</span>
+                    </div>
+
+                    {/* Stats for numeric questions */}
+                    {question.stats && (
+                      <div className="flex gap-4 mb-3 text-sm">
+                        <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded">Ø {question.stats.average}</span>
+                        <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">Min: {question.stats.min}</span>
+                        <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">Max: {question.stats.max}</span>
+                        <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">Median: {question.stats.median}</span>
+                      </div>
+                    )}
+
+                    {/* Distribution bars */}
+                    <div className="space-y-2">
+                      {question.distribution.slice(0, 10).map((item, i) => (
+                        <div key={item.value} className="flex items-center gap-3">
+                          <div className="w-32 text-sm text-slate-600 dark:text-slate-400 truncate" title={item.label || item.value}>
+                            {item.label || item.value}
+                          </div>
+                          <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${Math.max(item.percentage, 2)}%`,
+                                backgroundColor: COLORS[i % COLORS.length],
+                                minWidth: item.count > 0 ? "8px" : "0",
+                              }}
+                            />
+                          </div>
+                          <div className="w-16 text-sm text-right">
+                            <span className="font-medium">{item.percentage}%</span>
+                            <span className="text-slate-400 ml-1">({item.count})</span>
+                          </div>
+                        </div>
+                      ))}
+
+                      {question.distribution.length > 10 && <p className="text-sm text-slate-400 italic">+{question.distribution.length - 10} weitere Optionen</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -490,6 +501,7 @@ export default function Dashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="text-left py-3 px-2 font-medium text-slate-500 w-8"></th>
                     <th className="text-left py-3 px-2 font-medium text-slate-500">ID</th>
                     <th className="text-left py-3 px-2 font-medium text-slate-500">Survey</th>
                     <th className="text-left py-3 px-2 font-medium text-slate-500">Source</th>
@@ -498,27 +510,63 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {responses.length > 0 ? (
-                    responses.slice(0, 10).map((response) => (
-                      <tr key={response.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="py-3 px-2 font-mono text-xs">{response.id.slice(0, 8)}...</td>
-                        <td className="py-3 px-2">{response.survey_id}</td>
-                        <td className="py-3 px-2">{response.meta?.source || "-"}</td>
-                        <td className="py-3 px-2">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              response.completed_at ? "bg-green-100 dark:bg-green-900/30 text-green-600" : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600"
-                            }`}
-                          >
-                            {response.completed_at ? "Abgeschlossen" : "Offen"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-slate-500">{new Date(response.created_at).toLocaleDateString("de-DE")}</td>
-                      </tr>
+                  {filteredResponses.length > 0 ? (
+                    filteredResponses.slice(0, 15).map((response) => (
+                      <React.Fragment key={response.id}>
+                        <tr
+                          className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                          onClick={() => setExpandedResponseId(expandedResponseId === response.id ? null : response.id)}
+                        >
+                          <td className="py-3 px-2">
+                            <span className={`transition-transform inline-block ${expandedResponseId === response.id ? "rotate-90" : ""}`}>▶</span>
+                          </td>
+                          <td className="py-3 px-2 font-mono text-xs">{response.id.slice(0, 8)}...</td>
+                          <td className="py-3 px-2">{response.survey_id}</td>
+                          <td className="py-3 px-2">{response.meta?.source || "-"}</td>
+                          <td className="py-3 px-2">
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium ${
+                                response.completed_at ? "bg-green-100 dark:bg-green-900/30 text-green-600" : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600"
+                              }`}
+                            >
+                              {response.completed_at ? "Abgeschlossen" : "Offen"}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-slate-500">{new Date(response.created_at).toLocaleDateString("de-DE")}</td>
+                        </tr>
+                        {/* Expanded Answer Details */}
+                        {expandedResponseId === response.id && (
+                          <tr key={`${response.id}-details`}>
+                            <td colSpan="6" className="py-4 px-4 bg-slate-50 dark:bg-slate-800/30">
+                              <div className="text-xs font-medium text-slate-500 mb-3">Antworten:</div>
+                              {response.answers && Object.keys(response.answers).length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  {Object.entries(response.answers).map(([questionId, answer]) => (
+                                    <div key={questionId} className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                      <div className="text-xs text-slate-500 font-medium mb-1">{questionId}</div>
+                                      <div className="text-sm text-slate-900 dark:text-slate-100">
+                                        {Array.isArray(answer) ? answer.join(", ") : typeof answer === "object" ? JSON.stringify(answer) : String(answer)}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-slate-400 italic">Keine Antworten vorhanden</div>
+                              )}
+                              {/* Metadata */}
+                              <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500">
+                                <span className="mr-4">Erstellt: {new Date(response.created_at).toLocaleString("de-DE")}</span>
+                                {response.completed_at && <span className="mr-4">Abgeschlossen: {new Date(response.completed_at).toLocaleString("de-DE")}</span>}
+                                {response.meta?.user_agent && <span className="mr-4">Browser: {response.meta.user_agent.slice(0, 50)}...</span>}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="py-8 text-center text-slate-400 italic">
+                      <td colSpan="6" className="py-8 text-center text-slate-400 italic">
                         Keine Responses vorhanden
                       </td>
                     </tr>
