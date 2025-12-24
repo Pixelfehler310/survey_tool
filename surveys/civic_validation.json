@@ -6,7 +6,7 @@
         "captcha": false,
         "show_progress": true,
         "allow_back": true,
-        "duplicate_prevention": "none",
+        "duplicate_prevention": "client",
         "thank_you": {
             "title": "Vielen Dank für deine Teilnahme! 🎉",
             "message": "Deine Antworten helfen uns, Civic OS für dich zu bauen.\n\nWir melden uns, sobald wir live gehen!",
