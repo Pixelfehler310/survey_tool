@@ -137,10 +137,19 @@ function ConditionRow({ condition, questions, onChange, onRemove, canRemove }) {
 
 export default function LogicEditor({ isOpen, currentExpression, questions, onSave, onClose }) {
   const [conditions, setConditions] = useState([]);
+  const [mode, setMode] = useState("visual"); // 'visual' or 'manual'
+  const [manualExpression, setManualExpression] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       setConditions(parseExpression(currentExpression));
+      setManualExpression(currentExpression || "");
+      // Default to manual mode if expression couldn't be parsed
+      if (currentExpression && parseExpression(currentExpression).length === 1 && !parseExpression(currentExpression)[0].questionId) {
+        setMode("manual");
+      } else {
+        setMode("visual");
+      }
     }
   }, [isOpen, currentExpression]);
 
@@ -159,7 +168,7 @@ export default function LogicEditor({ isOpen, currentExpression, questions, onSa
   };
 
   const handleSave = () => {
-    const expr = generateExpression(conditions);
+    const expr = mode === "manual" ? manualExpression : generateExpression(conditions);
     onSave(expr);
     onClose();
   };
@@ -171,6 +180,14 @@ export default function LogicEditor({ isOpen, currentExpression, questions, onSa
 
   const expression = generateExpression(conditions);
 
+  // Sync manual expression when switching from visual mode
+  const handleModeChange = (newMode) => {
+    if (newMode === "manual" && mode === "visual") {
+      setManualExpression(expression);
+    }
+    setMode(newMode);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -179,39 +196,106 @@ export default function LogicEditor({ isOpen, currentExpression, questions, onSa
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
           <h3 className="text-lg font-bold">🔀 Bedingte Logik</h3>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Mode Toggle */}
+            <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 text-sm">
+              <button
+                onClick={() => handleModeChange("visual")}
+                className={`px-3 py-1 rounded transition-colors ${mode === "visual" ? "bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                Visual
+              </button>
+              <button
+                onClick={() => handleModeChange("manual")}
+                className={`px-3 py-1 rounded transition-colors ${mode === "manual" ? "bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                Code
+              </button>
+            </div>
+            <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">Diese Frage anzeigen, wenn folgende Bedingungen erfüllt sind:</p>
+          {mode === "visual" ? (
+            <>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Diese Frage anzeigen, wenn folgende Bedingungen erfüllt sind:</p>
 
-          {/* Conditions */}
-          <div className="space-y-3">
-            {conditions.map((condition, index) => (
-              <div key={index}>
-                {index > 0 && <div className="text-center text-xs text-slate-400 font-medium my-2">UND</div>}
-                <ConditionRow condition={condition} questions={questions} onChange={(c) => handleConditionChange(index, c)} onRemove={() => removeCondition(index)} canRemove={conditions.length > 1} />
+              {/* Conditions */}
+              <div className="space-y-3">
+                {conditions.map((condition, index) => (
+                  <div key={index}>
+                    {index > 0 && <div className="text-center text-xs text-slate-400 font-medium my-2">UND</div>}
+                    <ConditionRow
+                      condition={condition}
+                      questions={questions}
+                      onChange={(c) => handleConditionChange(index, c)}
+                      onRemove={() => removeCondition(index)}
+                      canRemove={conditions.length > 1}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Add Condition */}
-          <button
-            onClick={addCondition}
-            className="w-full p-2 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
-          >
-            + UND Bedingung hinzufügen
-          </button>
+              {/* Add Condition */}
+              <button
+                onClick={addCondition}
+                className="w-full p-2 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
+              >
+                + UND Bedingung hinzufügen
+              </button>
 
-          {/* Expression Preview */}
-          {expression && (
-            <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-              <div className="text-xs text-slate-500 mb-1">Generierte Expression:</div>
-              <code className="text-sm text-slate-700 dark:text-slate-300 break-all">{expression}</code>
-            </div>
+              {/* Expression Preview */}
+              {expression && (
+                <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                  <div className="text-xs text-slate-500 mb-1">Generierte Expression:</div>
+                  <code className="text-sm text-slate-700 dark:text-slate-300 break-all">{expression}</code>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Expression (JavaScript-Syntax)</label>
+                <textarea
+                  value={manualExpression}
+                  onChange={(e) => setManualExpression(e.target.value)}
+                  rows={4}
+                  placeholder="z.B. answers.q1 == 'yes' && answers.age >= 18"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                />
+              </div>
+
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <div className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-2">💡 Expression-Syntax</div>
+                <ul className="text-xs text-amber-700 dark:text-amber-400 space-y-1">
+                  <li>
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id == 'wert'</code> - Gleichheit
+                  </li>
+                  <li>
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id != 'wert'</code> - Ungleichheit
+                  </li>
+                  <li>
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id {">"} 5</code> - Größer als
+                  </li>
+                  <li>
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id.includes('text')</code> - Enthält
+                  </li>
+                  <li>
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">!answers.frage_id</code> - Ist leer
+                  </li>
+                  <li>
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">expr1 && expr2</code> - UND Verknüpfung
+                  </li>
+                  <li>
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">expr1 || expr2</code> - ODER Verknüpfung
+                  </li>
+                </ul>
+              </div>
+            </>
           )}
         </div>
 
