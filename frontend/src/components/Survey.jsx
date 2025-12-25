@@ -7,6 +7,7 @@ import ProgressBar from "./ProgressBar";
 import ThemeToggle from "./ThemeToggle";
 import Turnstile from "./Turnstile";
 import useBranding from "../hooks/useBranding";
+import ScrollSurvey from "./ScrollSurvey";
 
 export default function Survey({ surveyId: propSurveyId, previewDefinition, isPreview = false }) {
   const { surveyId: paramSurveyId } = useParams();
@@ -18,6 +19,7 @@ export default function Survey({ surveyId: propSurveyId, previewDefinition, isPr
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
   const [submittedSurvey, setSubmittedSurvey] = useState(null);
   const [countdown, setCountdown] = useState(0);
+  const [revealedCount, setRevealedCount] = useState(1); // For scroll-reveal mode
 
   // Session ID for event tracking (drop-off analysis)
   const sessionIdRef = useRef(crypto.randomUUID());
@@ -361,6 +363,29 @@ export default function Survey({ surveyId: propSurveyId, previewDefinition, isPr
     return null;
   }
 
+  // Determine layout mode
+  const layoutMode = survey.settings?.layout || "paged";
+
+  // Render scroll-based layouts
+  if (layoutMode === "scroll-reveal" || layoutMode === "scroll-all") {
+    return (
+      <ScrollSurvey
+        survey={survey}
+        answers={answers}
+        setAnswer={setAnswer}
+        revealedCount={revealedCount}
+        setRevealedCount={setRevealedCount}
+        isSubmitting={isSubmitting}
+        error={error}
+        turnstileToken={turnstileToken}
+        setTurnstileToken={setTurnstileToken}
+        onSubmit={handleSubmit}
+        isPreview={isPreview}
+      />
+    );
+  }
+
+  // Paged layout (default)
   const currentQuestion = getCurrentQuestion();
   const currentAnswer = getCurrentAnswer();
   const progress = getProgress();

@@ -52,18 +52,18 @@ function generateExpression(conditions) {
     .filter((c) => c.questionId)
     .map((c) => {
       if (c.operator === "isEmpty") {
-        return `!answers.${c.questionId}`;
+        return `not answers.${c.questionId}`;
       }
       if (c.operator === "isNotEmpty") {
         return `answers.${c.questionId}`;
       }
       if (c.operator === "contains") {
-        return `answers.${c.questionId}.includes('${c.value}')`;
+        return `answers.${c.questionId} in ['${c.value}']`;
       }
       return `answers.${c.questionId} ${c.operator} '${c.value}'`;
     });
 
-  return parts.join(" && ");
+  return parts.join(" and ");
 }
 
 function ConditionRow({ condition, questions, onChange, onRemove, canRemove }) {
@@ -259,12 +259,12 @@ export default function LogicEditor({ isOpen, currentExpression, questions, onSa
           ) : (
             <>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Expression (JavaScript-Syntax)</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Expression-Sprache</label>
                 <textarea
                   value={manualExpression}
                   onChange={(e) => setManualExpression(e.target.value)}
                   rows={4}
-                  placeholder="z.B. answers.q1 == 'yes' && answers.age >= 18"
+                  placeholder="z.B. answers.q1 == 'yes' and answers.age >= 18"
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
                 />
               </div>
@@ -279,19 +279,19 @@ export default function LogicEditor({ isOpen, currentExpression, questions, onSa
                     <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id != 'wert'</code> - Ungleichheit
                   </li>
                   <li>
-                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id {">"} 5</code> - Größer als
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id {">"}= 5</code> - Größer/Gleich
                   </li>
                   <li>
-                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id.includes('text')</code> - Enthält
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">answers.frage_id in ['a', 'b']</code> - Enthält (Wert in Liste)
                   </li>
                   <li>
-                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">!answers.frage_id</code> - Ist leer
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">not answers.frage_id</code> - Ist leer
                   </li>
                   <li>
-                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">expr1 && expr2</code> - UND Verknüpfung
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">expr1 and expr2</code> - UND Verknüpfung
                   </li>
                   <li>
-                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">expr1 || expr2</code> - ODER Verknüpfung
+                    <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">expr1 or expr2</code> - ODER Verknüpfung
                   </li>
                 </ul>
               </div>

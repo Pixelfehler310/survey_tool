@@ -51,6 +51,7 @@ class SurveySettings(BaseModel):
     captcha: bool = False  # Enable/disable Turnstile
     allow_multiple_responses: bool = False  # Allow multiple responses from same device
     duplicate_prevention: Optional[str] = None  # 'none', 'client', or 'server'
+    layout: Optional[str] = "paged"  # 'paged', 'scroll-reveal', or 'scroll-all'
     thank_you: Optional[ThankYouConfig] = None  # Custom thank-you page configuration
 
 

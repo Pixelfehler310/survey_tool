@@ -115,6 +115,25 @@ export default function SettingsPanel({ isOpen, onClose }) {
                   <option value="server">Server-seitig (strikt)</option>
                 </select>
               </div>
+
+              {/* Layout Mode */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Layout-Modus</label>
+                <select
+                  value={survey.settings?.layout || "paged"}
+                  onChange={(e) => setSettings({ layout: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                >
+                  <option value="paged">Seitenweise (Weiter/Zurück-Buttons)</option>
+                  <option value="scroll-reveal">Scroll mit Enthüllung (nächste Frage nach Antwort)</option>
+                  <option value="scroll-all">Scroll komplett (alle Fragen sichtbar)</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  {survey.settings?.layout === "scroll-reveal" && "Fragen werden nacheinander enthüllt, sobald die vorherige beantwortet wurde."}
+                  {survey.settings?.layout === "scroll-all" && "Alle Fragen sind von Anfang an sichtbar."}
+                  {(!survey.settings?.layout || survey.settings?.layout === "paged") && "Klassische Umfrage mit einer Frage pro Seite."}
+                </p>
+              </div>
             </div>
           )}
 
