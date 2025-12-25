@@ -187,11 +187,29 @@ export default function Dashboard() {
                 <h3 className="font-bold text-lg mb-2 truncate" title={survey.title}>
                   {survey.title}
                 </h3>
-                <p className="text-sm text-slate-500 mb-4 font-mono text-xs">{survey.id}</p>
+                <p className="text-xs text-slate-500 mb-4 font-mono">{survey.id}</p>
 
                 <div className="flex items-center justify-between text-sm text-slate-500 pt-4 border-t border-slate-100 dark:border-slate-800">
                   <span>{new Date(survey.created_at || Date.now()).toLocaleDateString()}</span>
                   <span>{survey.response_count || 0} Responses</span>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <Link
+                    to={`/app/builder/${survey.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex-1 px-3 py-2 text-center text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    ✏️ Bearbeiten
+                  </Link>
+                  <Link
+                    to={`/app/analytics/${survey.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex-1 px-3 py-2 text-center text-sm border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    📊 Statistik
+                  </Link>
                 </div>
               </Link>
             ))}

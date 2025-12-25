@@ -57,6 +57,37 @@ async def get_my_survey(
     return survey
 
 
+@router.put("/surveys/{survey_id}", response_model=SurveyOut)
+async def update_survey(
+    survey_id: str,
+    survey_def: SurveyDefinition,
+    db: AsyncSession = Depends(get_db),
+    user: TokenData = Depends(get_current_user)
+):
+    """Update an existing survey."""
+    # Verify ownership
+    result = await db.execute(
+        select(Survey).where(
+            Survey.id == survey_id,
+            Survey.user_id == user.sub
+        )
+    )
+    survey = result.scalar_one_or_none()
+    
+    if not survey:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Survey not found")
+    
+    # Update fields
+    survey.title = survey_def.title
+    survey.definition = survey_def.model_dump()
+    survey.updated_at = datetime.utcnow()
+    
+    await db.commit()
+    await db.refresh(survey)
+    
+    return survey
+
+
 @router.post("/surveys", response_model=SurveyOut)
 async def create_survey(
     survey_def: SurveyDefinition,

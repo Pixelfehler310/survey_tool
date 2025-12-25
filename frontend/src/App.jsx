@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Survey from "./components/Survey";
 import ThankYou from "./pages/ThankYou";
-import { Dashboard, ResponseList, SurveyAnalytics } from "./pages/app";
+import { Dashboard, ResponseList, SurveyAnalytics, SurveyBuilder } from "./pages/app";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import OAuthCallback from "./pages/auth/OAuthCallback";
@@ -34,6 +34,7 @@ function App() {
         {/* App Routes (Protected) */}
         <Route path="/app/dashboard" element={<Dashboard />} />
         <Route path="/app/analytics/:surveyId" element={<SurveyAnalytics />} />
+        <Route path="/app/builder/:surveyId" element={<SurveyBuilder />} />
         <Route path="/app/responses" element={<ResponseList />} />
 
         {/* Root Redirect */}
