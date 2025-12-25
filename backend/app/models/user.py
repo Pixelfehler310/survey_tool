@@ -15,15 +15,23 @@ def generate_uuid() -> str:
 
 
 class User(Base):
-    """User model for local authentication."""
+    """User model for local and OAuth authentication."""
     __tablename__ = "users"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
+    password_hash = Column(String(255), nullable=True)  # Nullable for OAuth users
     name = Column(String(255), nullable=True)
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # OAuth fields
+    oauth_provider = Column(String(20), default="local")  # 'local', 'google', 'github'
+    oauth_id = Column(String(255), nullable=True, index=True)  # Provider's user ID
+    avatar_url = Column(String(500), nullable=True)
+    email_verified = Column(Boolean, default=False)
+    last_login = Column(DateTime, nullable=True)
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id}, email={self.email}, is_admin={self.is_admin})>"
+        return f"<User(id={self.id}, email={self.email}, provider={self.oauth_provider})>"
+

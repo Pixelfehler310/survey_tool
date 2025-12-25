@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import useAdminStore from "../../store/adminStore";
 import ThemeToggle from "../../components/ThemeToggle";
@@ -18,8 +18,9 @@ const DATE_RANGE_OPTIONS = [
 
 const COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e", "#10b981", "#f59e0b"];
 
-export default function Dashboard() {
+export default function SurveyAnalytics() {
   const navigate = useNavigate();
+  const { surveyId } = useParams();
   const {
     isAuthenticated,
     responses,
@@ -40,7 +41,7 @@ export default function Dashboard() {
     setFilters,
   } = useAdminStore();
 
-  const [selectedSurvey, setSelectedSurvey] = useState("");
+  const [selectedSurvey, setSelectedSurvey] = useState(surveyId);
   const [dateRange, setDateRange] = useState("all");
   const [customDateStart, setCustomDateStart] = useState("");
   const [customDateEnd, setCustomDateEnd] = useState("");
@@ -51,7 +52,7 @@ export default function Dashboard() {
   // Load surveys on mount
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/admin");
+      navigate("/login");
       return;
     }
     fetchSurveys();
@@ -101,12 +102,12 @@ export default function Dashboard() {
     return lookup(value);
   };
 
-  // When surveys load, select first one
+  // Sync selectedSurvey with URL param
   useEffect(() => {
-    if (surveys.length > 0 && !selectedSurvey) {
-      setSelectedSurvey(surveys[0].id);
+    if (surveyId) {
+      setSelectedSurvey(surveyId);
     }
-  }, [surveys]);
+  }, [surveyId]);
 
   // Fetch data when survey changes
   useEffect(() => {
@@ -276,7 +277,7 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     logout();
-    navigate("/admin");
+    navigate("/login");
   };
 
   if (!isAuthenticated) {
@@ -289,10 +290,10 @@ export default function Dashboard() {
       <header className="border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+            <Link to="/app/dashboard" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
               Survey Engine
             </Link>
-            <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded">Admin</span>
+            <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded">App</span>
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
@@ -307,19 +308,11 @@ export default function Dashboard() {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-6">
           {/* Survey Selector */}
-          <div>
-            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Umfrage</label>
-            <select
-              value={selectedSurvey}
-              onChange={(e) => setSelectedSurvey(e.target.value)}
-              className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              {surveys.map((survey) => (
-                <option key={survey.id} value={survey.id}>
-                  {survey.title} ({survey.response_count})
-                </option>
-              ))}
-            </select>
+          {/* Back Link */}
+          <div className="flex items-center">
+            <Link to="/app/dashboard" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              ← Zurück zur Übersicht
+            </Link>
           </div>
 
           {/* Date Range Filter */}
@@ -589,7 +582,7 @@ export default function Dashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Letzte Responses</h3>
-            <Link to="/admin/responses" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+            <Link to="/app/responses" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
               Alle anzeigen →
             </Link>
           </div>

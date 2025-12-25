@@ -35,6 +35,17 @@ class Settings(BaseSettings):
     NOTIFICATION_EMAIL: str = ""  # Email to receive notifications
     ADMIN_DASHBOARD_URL: str = "http://localhost:3000/admin"
     
+    # OAuth - Google (https://console.cloud.google.com/apis/credentials)
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    
+    # OAuth - GitHub (https://github.com/settings/developers)
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+    
+    # Frontend URL (for OAuth redirects)
+    FRONTEND_URL: str = "http://localhost:5173"
+    
     @property
     def cors_origins_list(self) -> List[str]:
         """Parse CORS origins from comma-separated string."""

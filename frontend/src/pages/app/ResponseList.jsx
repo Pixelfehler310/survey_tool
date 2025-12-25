@@ -16,7 +16,7 @@ export default function ResponseList() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/admin");
+      navigate("/login");
       return;
     }
     fetchResponses();
@@ -43,7 +43,7 @@ export default function ResponseList() {
       <header className="border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/admin/dashboard" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+            <Link to="/app/dashboard" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
               ← Dashboard
             </Link>
           </div>
@@ -52,7 +52,7 @@ export default function ResponseList() {
             <button
               onClick={() => {
                 logout();
-                navigate("/admin");
+                navigate("/login");
               }}
               className="text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
             >

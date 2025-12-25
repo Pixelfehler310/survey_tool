@@ -14,6 +14,13 @@ class SetupRequest(BaseModel):
     name: Optional[str] = Field(None, max_length=255)
 
 
+class RegisterRequest(BaseModel):
+    """Request schema for new user registration."""
+    email: EmailStr
+    password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
+    name: Optional[str] = Field(None, max_length=255)
+
+
 class LoginRequest(BaseModel):
     """Request schema for user login."""
     email: EmailStr

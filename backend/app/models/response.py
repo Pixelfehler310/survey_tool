@@ -29,16 +29,4 @@ class Response(Base):
         return f"<Response(id={self.id}, survey_id={self.survey_id})>"
 
 
-class Survey(Base):
-    """Survey definition model (optional, can also use static JSON files)."""
-    __tablename__ = "surveys"
 
-    id = Column(String(100), primary_key=True)
-    title = Column(String(255), nullable=False)
-    definition = Column(JSON, nullable=False)
-    is_active = Column(String(5), default="true")  # Using string for SQLite compatibility
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    def __repr__(self) -> str:
-        return f"<Survey(id={self.id}, title={self.title})>"

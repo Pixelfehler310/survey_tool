@@ -14,7 +14,7 @@ services:
       - DATABASE_URL=sqlite+aiosqlite:///./data/survey.db
       - CORS_ORIGINS=http://localhost:3000,http://localhost:5173
       - SURVEYS_PATH=/app/surveys
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: sh -c "python -m alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   frontend:
     build:

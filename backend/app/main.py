@@ -6,7 +6,7 @@ from slowapi.errors import RateLimitExceeded
 
 from .config import get_settings
 from .database import init_db
-from .routes import surveys, responses, admin, analytics, setup, events
+from .routes import surveys, responses, admin, analytics, setup, events, oauth, app as app_router
 from .rate_limit import limiter
 
 settings = get_settings()
@@ -23,8 +23,10 @@ async def lifespan(app: FastAPI):
             "Set JWT_SECRET_KEY in production!"
         )
     
-    # Startup: Initialize database
-    await init_db()
+    # Startup: Schema is now managed by Alembic migrations
+    # For fresh install or upgrade, run: cd backend && alembic upgrade head
+    # The old init_db() is kept for development convenience but migrations are preferred
+    await init_db()  # Creates tables if not exist (safe for dev, use migrations for prod)
     yield
     # Shutdown: cleanup if needed
 
@@ -56,6 +58,8 @@ app.include_router(responses.router, prefix="/api/v1")
 app.include_router(events.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1/admin")
 app.include_router(analytics.router, prefix="/api/v1/admin")
+app.include_router(app_router.router, prefix="/api/v1")
+app.include_router(oauth.router, prefix="/api/v1")
 
 
 @app.get("/")

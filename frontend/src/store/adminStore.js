@@ -67,6 +67,15 @@ const useAdminStore = create(
                 });
             },
 
+            // OAuth token setter (used by OAuthCallback)
+            setToken: (token) => {
+                set({
+                    token,
+                    isAuthenticated: true,
+                    error: null,
+                });
+            },
+
             // API helpers
             authFetch: async (url, options = {}) => {
                 const { token } = get();
@@ -132,11 +141,91 @@ const useAdminStore = create(
                 const { authFetch } = get();
 
                 try {
-                    const response = await authFetch('/api/v1/admin/surveys');
+                    const response = await authFetch('/api/v1/app/surveys');
                     const data = await response.json();
-                    set({ surveys: data.surveys || [] });
+                    // API returns list directly now, not {surveys: []}
+                    set({ surveys: Array.isArray(data) ? data : (data.surveys || []) });
                 } catch (error) {
                     console.error('Failed to fetch surveys:', error);
+                }
+            },
+
+            createSurvey: async (surveyDef) => {
+                const { authFetch, fetchSurveys } = get();
+                // If ID is not provided, generate one? Backend handles validation.
+
+                try {
+                    const response = await authFetch('/api/v1/app/surveys', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(surveyDef)
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.detail || 'Erstellung fehlgeschlagen');
+                    }
+
+                    await fetchSurveys();
+                    return true;
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
+            importSurvey: async (file) => {
+                const { authFetch, fetchSurveys } = get();
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await authFetch('/api/v1/app/surveys/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.detail || 'Import fehlgeschlagen');
+                    }
+
+                    await fetchSurveys();
+                    return true;
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
+            fetchTemplates: async () => {
+                const { authFetch } = get();
+                try {
+                    const response = await authFetch('/api/v1/app/templates');
+                    return await response.json();
+                } catch (error) {
+                    console.error('Failed to fetch templates:', error);
+                    return [];
+                }
+            },
+
+            useTemplate: async (templateId) => {
+                const { authFetch, fetchSurveys } = get();
+                try {
+                    const response = await authFetch(`/api/v1/app/surveys/template/${templateId}`, {
+                        method: 'POST'
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.detail || 'Template konnte nicht verwendet werden');
+                    }
+
+                    await fetchSurveys();
+                    return true;
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
                 }
             },
 

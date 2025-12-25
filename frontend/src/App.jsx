@@ -3,11 +3,13 @@
  */
 
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Survey from "./components/Survey";
-import Home from "./pages/Home";
 import ThankYou from "./pages/ThankYou";
-import { AdminLogin, AdminSetup, Dashboard, ResponseList } from "./pages/admin";
+import { Dashboard, ResponseList, SurveyAnalytics } from "./pages/app";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import OAuthCallback from "./pages/auth/OAuthCallback";
 import useThemeStore from "./store/themeStore";
 
 function App() {
@@ -20,15 +22,25 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* Public Survey Route */}
         <Route path="/survey/:surveyId" element={<Survey />} />
         <Route path="/thank-you" element={<ThankYou />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/setup" element={<AdminSetup />} />
-        <Route path="/admin/dashboard" element={<Dashboard />} />
-        <Route path="/admin/responses" element={<ResponseList />} />
+        {/* Auth Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/auth/callback" element={<OAuthCallback />} />
+
+        {/* App Routes (Protected) */}
+        <Route path="/app/dashboard" element={<Dashboard />} />
+        <Route path="/app/analytics/:surveyId" element={<SurveyAnalytics />} />
+        <Route path="/app/responses" element={<ResponseList />} />
+
+        {/* Root Redirect */}
+        <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+
+        {/* Fallback Redirect */}
+        <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );

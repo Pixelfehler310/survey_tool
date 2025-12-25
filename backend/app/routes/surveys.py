@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, status
 
 from ..config import get_settings
-from ..schemas.response import SurveyDefinition
+from ..schemas.survey import SurveyDefinition
 
 router = APIRouter(tags=["surveys"])
 settings = get_settings()
