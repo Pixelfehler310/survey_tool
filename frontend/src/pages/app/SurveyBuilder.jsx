@@ -24,7 +24,7 @@ function CanvasDropZone({ children, isEmpty }) {
     <div
       ref={setNodeRef}
       className={`
-        flex-1 p-6 overflow-y-auto
+        flex-1 h-full min-h-0 p-6 overflow-y-auto
         ${isEmpty ? "flex items-center justify-center" : ""}
       `}
     >
@@ -139,7 +139,7 @@ export default function SurveyBuilder() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-slate-950">
+    <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-950 overflow-hidden">
       {/* Header */}
       <header className="h-14 px-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="flex items-center gap-4">
@@ -172,8 +172,8 @@ export default function SurveyBuilder() {
       {/* Error Banner */}
       {error && <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 text-red-600 text-sm">{error}</div>}
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Content - each panel scrolls independently */}
+      <div className="flex-1 flex min-h-0">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           {/* Left: Question Library */}
           <QuestionLibrary />

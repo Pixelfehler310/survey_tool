@@ -157,7 +157,7 @@ export default function QuestionEditor() {
 
   if (!question) {
     return (
-      <div className="w-80 p-6 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+      <div className="w-80 h-full p-6 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
         <div className="flex flex-col items-center justify-center h-full text-center text-slate-400">
           <div className="text-4xl mb-4">👈</div>
           <p className="text-sm">Wählen Sie eine Frage aus, um sie zu bearbeiten</p>
@@ -175,7 +175,7 @@ export default function QuestionEditor() {
   };
 
   return (
-    <div className="w-80 p-4 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto">
+    <div className="w-80 h-full p-4 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
@@ -215,8 +215,8 @@ export default function QuestionEditor() {
           >
             <span
               className={`
-                absolute top-1 w-4 h-4 bg-white rounded-full transition-transform
-                ${question.required ? "translate-x-6" : "translate-x-1"}
+                absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform shadow-sm
+                ${question.required ? "translate-x-5" : "translate-x-0"}
               `}
             />
           </button>

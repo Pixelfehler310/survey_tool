@@ -44,7 +44,7 @@ export default function QuestionCard({ question, isSelected, onSelect, onDelete,
           {question.required && <span className="text-xs px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">Pflicht</span>}
           {question.show_if && <span className="text-xs px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">Logik</span>}
         </div>
-        <p className="text-sm text-slate-700 dark:text-slate-300 truncate">{question.text || <span className="italic text-slate-400">Keine Frage eingegeben</span>}</p>
+        <p className="text-2xl font-medium text-slate-800 dark:text-slate-200 line-clamp-2">{question.text || <span className="italic text-slate-400 font-normal">Keine Frage eingegeben</span>}</p>
       </div>
 
       {/* Actions */}

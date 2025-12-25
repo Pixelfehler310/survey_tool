@@ -21,8 +21,8 @@ function SettingToggle({ label, description, value, onChange }) {
       >
         <span
           className={`
-            absolute top-1 w-4 h-4 bg-white rounded-full transition-transform
-            ${value ? "translate-x-6" : "translate-x-1"}
+            absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform shadow-sm
+            ${value ? "translate-x-5" : "translate-x-0"}
           `}
         />
       </button>

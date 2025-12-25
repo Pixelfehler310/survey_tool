@@ -40,17 +40,19 @@ export default function QuestionLibrary() {
   const questionTypes = getQuestionTypeList();
 
   return (
-    <div className="w-64 p-4 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-y-auto">
-      <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">Fragetypen</h3>
+    <div className="w-64 h-full flex flex-col border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+      <div className="p-4 overflow-y-auto flex-1">
+        <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">Fragetypen</h3>
 
-      <div className="space-y-2">
-        {questionTypes.map((qt) => (
-          <DraggableQuestionType key={qt.type} type={qt.type} icon={qt.icon} label={qt.label} description={qt.description} />
-        ))}
-      </div>
+        <div className="space-y-2">
+          {questionTypes.map((qt) => (
+            <DraggableQuestionType key={qt.type} type={qt.type} icon={qt.icon} label={qt.label} description={qt.description} />
+          ))}
+        </div>
 
-      <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-        <p className="text-xs text-slate-400 italic">Ziehen Sie einen Fragetyp in den Bearbeitungsbereich</p>
+        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-xs text-slate-400 italic">Ziehen Sie einen Fragetyp in den Bearbeitungsbereich</p>
+        </div>
       </div>
     </div>
   );
