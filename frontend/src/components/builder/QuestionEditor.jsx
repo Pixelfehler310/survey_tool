@@ -2,22 +2,43 @@
  * QuestionEditor - Right panel for editing selected question
  */
 
-import React from "react";
+import React, { useState } from "react";
 import useBuilderStore from "../../store/builderStore";
 import { getQuestionType } from "./questionTypes";
 
+/**
+ * Tooltip component with info icon
+ */
+function InfoTooltip({ text }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <span className="relative inline-block ml-1">
+      <button
+        type="button"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={() => setShow(!show)}
+        className="inline-flex items-center justify-center w-4 h-4 text-xs rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-help"
+      >
+        i
+      </button>
+      {show && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-slate-800 dark:bg-slate-700 rounded-lg shadow-lg w-48 text-center">
+          {text}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700" />
+        </div>
+      )}
+    </span>
+  );
+}
+
 function OptionsEditor({ options = [], onChange }) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   const handleOptionChange = (index, field, value) => {
     const newOptions = [...options];
     newOptions[index] = { ...newOptions[index], [field]: value };
-    // Auto-update value if label changes and value matches old pattern
-    if (field === "label" && newOptions[index].value.startsWith("option")) {
-      newOptions[index].value =
-        value
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, "_")
-          .slice(0, 20) || `option${index + 1}`;
-    }
     onChange(newOptions);
   };
 
@@ -33,19 +54,41 @@ function OptionsEditor({ options = [], onChange }) {
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Optionen</label>
+      <div className="flex items-center justify-between">
+        <label className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300">
+          Optionen
+          <InfoTooltip text="Definieren Sie die Antwortmöglichkeiten. Klicken Sie auf 'IDs bearbeiten' um die technischen Werte für Expressions anzupassen." />
+        </label>
+        <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="text-xs text-indigo-500 hover:text-indigo-600">
+          {showAdvanced ? "IDs ausblenden" : "IDs bearbeiten"}
+        </button>
+      </div>
       {options.map((option, index) => (
-        <div key={index} className="flex gap-2">
-          <input
-            type="text"
-            value={option.label}
-            onChange={(e) => handleOptionChange(index, "label", e.target.value)}
-            placeholder={`Option ${index + 1}`}
-            className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          />
-          <button onClick={() => removeOption(index)} disabled={options.length <= 1} className="p-2 text-slate-400 hover:text-red-500 disabled:opacity-30">
-            ✕
-          </button>
+        <div key={index} className="space-y-1">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={option.label}
+              onChange={(e) => handleOptionChange(index, "label", e.target.value)}
+              placeholder={`Option ${index + 1}`}
+              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <button onClick={() => removeOption(index)} disabled={options.length <= 1} className="p-2 text-slate-400 hover:text-red-500 disabled:opacity-30">
+              ✕
+            </button>
+          </div>
+          {showAdvanced && (
+            <div className="flex items-center gap-2 pl-2">
+              <span className="text-xs text-slate-400">ID:</span>
+              <input
+                type="text"
+                value={option.value}
+                onChange={(e) => handleOptionChange(index, "value", e.target.value.replace(/[^a-z0-9_]/gi, "_").toLowerCase())}
+                placeholder="option_id"
+                className="flex-1 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-mono focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+          )}
         </div>
       ))}
       <button
@@ -159,7 +202,10 @@ export default function QuestionEditor() {
 
         {/* Required Toggle */}
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Pflichtfeld</label>
+          <label className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300">
+            Pflichtfeld
+            <InfoTooltip text="Wenn aktiviert, muss der Nutzer diese Frage beantworten, bevor er fortfahren kann." />
+          </label>
           <button
             onClick={() => handleUpdate("required", !question.required)}
             className={`
@@ -185,7 +231,10 @@ export default function QuestionEditor() {
         {/* Logic Section */}
         <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Bedingte Logik</label>
+            <label className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300">
+              Bedingte Logik
+              <InfoTooltip text="Expression zur bedingten Anzeige. Verwenden Sie 'answers.<frage_id>' um auf Antworten zu verweisen. Beispiele: answers.age >= 18, answers.gender == 'male', answers.hobbies.includes('sports')" />
+            </label>
             {question.show_if && <span className="text-xs px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded">Aktiv</span>}
           </div>
           <input
@@ -198,10 +247,27 @@ export default function QuestionEditor() {
           <p className="mt-1 text-xs text-slate-400">Expression die true sein muss, damit diese Frage angezeigt wird</p>
         </div>
 
-        {/* Question ID (readonly) */}
+        {/* Question ID (editable) */}
         <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-          <label className="block text-sm font-medium text-slate-500 mb-1">Frage-ID</label>
-          <code className="block w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded text-xs text-slate-600 dark:text-slate-400">{question.id}</code>
+          <label className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Frage-ID
+            <InfoTooltip text="Eindeutige ID für diese Frage. Wird in Expressions referenziert als 'answers.<id>'. Verwenden Sie aussagekräftige Namen wie 'age', 'gender', 'satisfaction'." />
+          </label>
+          <input
+            type="text"
+            value={question.id}
+            onChange={(e) => {
+              const newId = e.target.value.replace(/[^a-z0-9_]/gi, "_").toLowerCase();
+              if (newId && newId !== question.id) {
+                handleUpdate("id", newId);
+              }
+            }}
+            placeholder="question_id"
+            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            Referenzieren als: <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">answers.{question.id}</code>
+          </p>
         </div>
       </div>
     </div>

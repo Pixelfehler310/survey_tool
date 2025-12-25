@@ -102,15 +102,24 @@ const useBuilderStore = create((set, get) => ({
         return newQuestion.id;
     },
 
-    updateQuestion: (id, updates) => set((state) => ({
-        survey: {
-            ...state.survey,
-            questions: state.survey.questions.map((q) =>
-                q.id === id ? { ...q, ...updates } : q
-            ),
-        },
-        isDirty: true,
-    })),
+    updateQuestion: (id, updates) => set((state) => {
+        // If we're changing the ID, we need to update selectedQuestionId too
+        const isIdChanging = updates.id && updates.id !== id;
+
+        return {
+            survey: {
+                ...state.survey,
+                questions: state.survey.questions.map((q) =>
+                    q.id === id ? { ...q, ...updates } : q
+                ),
+            },
+            // Update selection if the ID is being changed
+            selectedQuestionId: isIdChanging && state.selectedQuestionId === id
+                ? updates.id
+                : state.selectedQuestionId,
+            isDirty: true,
+        };
+    }),
 
     removeQuestion: (id) => set((state) => ({
         survey: {

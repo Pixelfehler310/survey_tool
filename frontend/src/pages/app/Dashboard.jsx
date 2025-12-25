@@ -34,16 +34,21 @@ export default function Dashboard() {
 
     setIsCreating(true);
     try {
-      // Basic empty survey structure
+      // Generate a random UUID-style ID (independent of title)
+      const randomId = crypto.randomUUID
+        ? crypto.randomUUID()
+        : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+          });
+
       const newSurvey = {
-        id: title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Date.now().toString().slice(-4),
+        id: randomId,
         title: title,
         questions: [],
         settings: { allow_back: true },
       };
       await createSurvey(newSurvey);
-      // Navigate to builder? Or assume analytics for now (which will be empty)
-      // Since builder doesn't exist yet, maybe just reload list?
     } catch (err) {
       alert("Fehler: " + err.message);
     } finally {
