@@ -8,8 +8,9 @@ import ThemeToggle from "./ThemeToggle";
 import Turnstile from "./Turnstile";
 import useBranding from "../hooks/useBranding";
 
-export default function Survey() {
-  const { surveyId } = useParams();
+export default function Survey({ surveyId: propSurveyId, previewDefinition, isPreview = false }) {
+  const { surveyId: paramSurveyId } = useParams();
+  const surveyId = propSurveyId || paramSurveyId;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -102,6 +103,13 @@ export default function Survey() {
   // Load survey on mount
   useEffect(() => {
     async function fetchSurvey() {
+      // In preview mode, use provided definition
+      if (isPreview && previewDefinition) {
+        setSurvey(previewDefinition);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
@@ -126,7 +134,7 @@ export default function Survey() {
     return () => {
       // Don't reset on unmount to preserve progress
     };
-  }, [surveyId, trackEvent]);
+  }, [surveyId, trackEvent, isPreview, previewDefinition]);
 
   // Auto-fill hidden fields from URL parameters
   useEffect(() => {

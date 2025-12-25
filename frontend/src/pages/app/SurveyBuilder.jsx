@@ -13,6 +13,7 @@ import QuestionLibrary from "../../components/builder/QuestionLibrary";
 import QuestionCard from "../../components/builder/QuestionCard";
 import QuestionEditor from "../../components/builder/QuestionEditor";
 import SettingsPanel from "../../components/builder/SettingsPanel";
+import PreviewPanel from "../../components/builder/PreviewPanel";
 import { getQuestionType } from "../../components/builder/questionTypes";
 import ThemeToggle from "../../components/ThemeToggle";
 
@@ -53,6 +54,7 @@ export default function SurveyBuilder() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [activeId, setActiveId] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
@@ -152,6 +154,9 @@ export default function SurveyBuilder() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button onClick={() => setShowPreview(true)} className="px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">
+            👁️ Vorschau
+          </button>
           <button onClick={() => setShowSettings(true)} className="px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">
             ⚙️ Einstellungen
           </button>
@@ -231,6 +236,9 @@ export default function SurveyBuilder() {
 
       {/* Settings Modal */}
       <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
+
+      {/* Preview Modal */}
+      <PreviewPanel isOpen={showPreview} survey={survey} onClose={() => setShowPreview(false)} />
     </div>
   );
 }

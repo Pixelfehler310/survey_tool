@@ -5,6 +5,7 @@
 import React, { useState } from "react";
 import useBuilderStore from "../../store/builderStore";
 import { getQuestionType } from "./questionTypes";
+import LogicEditor from "./LogicEditor";
 
 /**
  * Tooltip component with info icon
@@ -150,6 +151,44 @@ function ScaleConfigEditor({ config = {}, onChange }) {
   );
 }
 
+// Logic section with modal trigger
+function LogicSection({ question, allQuestions, onUpdate }) {
+  const [showLogicEditor, setShowLogicEditor] = useState(false);
+
+  // Filter out current question from list
+  const availableQuestions = allQuestions.filter((q) => q.id !== question.id);
+
+  return (
+    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Bedingte Logik</label>
+        {question.show_if && <span className="text-xs px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded">Aktiv</span>}
+      </div>
+
+      {question.show_if ? (
+        <div className="space-y-2">
+          <code className="block w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded text-xs text-slate-600 dark:text-slate-400 break-all">{question.show_if}</code>
+          <button
+            onClick={() => setShowLogicEditor(true)}
+            className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            🔀 Logik bearbeiten
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setShowLogicEditor(true)}
+          className="w-full px-3 py-2 text-sm border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-slate-500 hover:border-purple-400 hover:text-purple-500 transition-colors"
+        >
+          + Bedingte Logik hinzufügen
+        </button>
+      )}
+
+      <LogicEditor isOpen={showLogicEditor} currentExpression={question.show_if || ""} questions={availableQuestions} onSave={onUpdate} onClose={() => setShowLogicEditor(false)} />
+    </div>
+  );
+}
+
 export default function QuestionEditor() {
   const { selectedQuestionId, survey, updateQuestion, selectQuestion } = useBuilderStore();
 
@@ -229,23 +268,7 @@ export default function QuestionEditor() {
         {hasScale && <ScaleConfigEditor config={question.config || {}} onChange={(config) => handleUpdate("config", config)} />}
 
         {/* Logic Section */}
-        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between mb-2">
-            <label className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300">
-              Bedingte Logik
-              <InfoTooltip text="Expression zur bedingten Anzeige. Verwenden Sie 'answers.<frage_id>' um auf Antworten zu verweisen. Beispiele: answers.age >= 18, answers.gender == 'male', answers.hobbies.includes('sports')" />
-            </label>
-            {question.show_if && <span className="text-xs px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded">Aktiv</span>}
-          </div>
-          <input
-            type="text"
-            value={question.show_if || ""}
-            onChange={(e) => handleUpdate("show_if", e.target.value)}
-            placeholder="z.B. answers.q1 == 'yes'"
-            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono"
-          />
-          <p className="mt-1 text-xs text-slate-400">Expression die true sein muss, damit diese Frage angezeigt wird</p>
-        </div>
+        <LogicSection question={question} allQuestions={survey.questions} onUpdate={(expr) => handleUpdate("show_if", expr)} />
 
         {/* Question ID (editable) */}
         <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
