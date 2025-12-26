@@ -4,7 +4,9 @@
 
 import { TextInput, TextArea, RadioGroup, CheckboxGroup, Scale, Dropdown } from "./QuestionTypes";
 import RankingQuestion from "./questions/RankingQuestion";
+import { getPluginRenderer, isPluginType } from "../lib/pluginRegistry";
 
+// Core question type components
 const QUESTION_COMPONENTS = {
   text: TextInput,
   textarea: TextArea,
@@ -17,7 +19,9 @@ const QUESTION_COMPONENTS = {
 };
 
 export default function Question({ question, value, onChange, error }) {
-  const QuestionComponent = QUESTION_COMPONENTS[question.type];
+  // Check for plugin renderer first
+  const PluginRenderer = isPluginType(question.type) ? getPluginRenderer(question.type) : null;
+  const QuestionComponent = PluginRenderer || QUESTION_COMPONENTS[question.type];
 
   if (!QuestionComponent) {
     return <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">Unbekannter Fragetyp: {question.type}</div>;

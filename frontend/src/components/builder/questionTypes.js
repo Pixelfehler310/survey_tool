@@ -2,16 +2,19 @@
  * Question Types Registry
  * 
  * Central registry for all question types.
- * Designed to be extended by plugins in the future.
+ * Extended by plugins via pluginRegistry.
  */
 
-// Question type definitions
-export const questionTypes = {
+import { getPluginQuestionTypes, getPluginQuestionType, isPluginType, getPluginDefaults } from '../../lib/pluginRegistry';
+
+// Core question type definitions
+export const coreQuestionTypes = {
     text: {
         type: 'text',
         label: 'Kurztext',
         icon: '✏️',
         description: 'Einzeilige Texteingabe',
+        category: 'basic',
         defaults: {
             text: 'Ihre Frage hier...',
             required: false,
@@ -22,6 +25,7 @@ export const questionTypes = {
         label: 'Langtext',
         icon: '📝',
         description: 'Mehrzeilige Texteingabe',
+        category: 'basic',
         defaults: {
             text: 'Ihre Frage hier...',
             required: false,
@@ -32,6 +36,7 @@ export const questionTypes = {
         label: 'Einzelauswahl',
         icon: '⭕',
         description: 'Eine Option auswählen',
+        category: 'choice',
         defaults: {
             text: 'Ihre Frage hier...',
             required: false,
@@ -46,6 +51,7 @@ export const questionTypes = {
         label: 'Mehrfachauswahl',
         icon: '☑️',
         description: 'Mehrere Optionen auswählen',
+        category: 'choice',
         defaults: {
             text: 'Ihre Frage hier...',
             required: false,
@@ -60,6 +66,7 @@ export const questionTypes = {
         label: 'Dropdown',
         icon: '📋',
         description: 'Auswahl aus Liste',
+        category: 'choice',
         defaults: {
             text: 'Ihre Frage hier...',
             required: false,
@@ -74,6 +81,7 @@ export const questionTypes = {
         label: 'Skala',
         icon: '⭐',
         description: 'Bewertungsskala',
+        category: 'rating',
         defaults: {
             text: 'Ihre Frage hier...',
             required: false,
@@ -90,6 +98,7 @@ export const questionTypes = {
         label: 'Ranking',
         icon: '🔢',
         description: 'Optionen sortieren',
+        category: 'advanced',
         defaults: {
             text: 'Ihre Frage hier...',
             required: false,
@@ -105,6 +114,7 @@ export const questionTypes = {
         label: 'Versteckt',
         icon: '👁️‍🗨️',
         description: 'Verstecktes Feld',
+        category: 'advanced',
         defaults: {
             text: 'hidden_field',
             required: false,
@@ -112,37 +122,37 @@ export const questionTypes = {
     },
 };
 
-// Get all question types as array (for iteration)
-export const getQuestionTypeList = () => Object.values(questionTypes);
+// Get all question types (core + plugins)
+export const getQuestionTypeList = () => {
+    const core = Object.values(coreQuestionTypes);
+    const plugins = getPluginQuestionTypes();
+    return [...core, ...plugins];
+};
 
-// Get a specific question type
-export const getQuestionType = (type) => questionTypes[type] || null;
+// Get a specific question type (core or plugin)
+export const getQuestionType = (type) => {
+    return coreQuestionTypes[type] || getPluginQuestionType(type) || null;
+};
 
 // Check if a type exists
-export const hasQuestionType = (type) => type in questionTypes;
+export const hasQuestionType = (type) => {
+    return type in coreQuestionTypes || isPluginType(type);
+};
 
 // Get default props for a question type
 export const getQuestionDefaults = (type) => {
-    const qt = questionTypes[type];
-    return qt ? { ...qt.defaults, type } : { type, text: '', required: false };
+    const qt = coreQuestionTypes[type];
+    if (qt) return { ...qt.defaults, type };
+
+    if (isPluginType(type)) {
+        return getPluginDefaults(type);
+    }
+
+    return { type, text: '', required: false };
 };
 
-/**
- * Future Plugin API:
- * 
- * registerQuestionType(definition) - Add a new question type
- * unregisterQuestionType(type) - Remove a question type
- * 
- * Plugins would call:
- * import { registerQuestionType } from './questionTypes';
- * registerQuestionType({
- *   type: 'nps',
- *   label: 'Net Promoter Score',
- *   icon: '📊',
- *   editor: NPSEditor,
- *   renderer: NPSRenderer,
- *   defaults: {...}
- * });
- */
+// Legacy export for compatibility
+export const questionTypes = coreQuestionTypes;
 
 export default questionTypes;
+

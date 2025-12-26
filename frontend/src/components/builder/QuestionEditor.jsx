@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import useBuilderStore from "../../store/builderStore";
 import { getQuestionType } from "./questionTypes";
 import LogicEditor from "./LogicEditor";
+import { getPluginEditor, isPluginType } from "../../lib/pluginRegistry";
 
 /**
  * Tooltip component with info icon
@@ -266,6 +267,30 @@ export default function QuestionEditor() {
 
         {/* Scale Config */}
         {hasScale && <ScaleConfigEditor config={question.config || {}} onChange={(config) => handleUpdate("config", config)} />}
+
+        {/* Plugin-specific Editor */}
+        {isPluginType(question.type) &&
+          (() => {
+            const PluginEditor = getPluginEditor(question.type);
+            if (PluginEditor) {
+              return (
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Plugin-Einstellungen</h4>
+                  <PluginEditor
+                    question={question}
+                    onChange={(updatedQuestion) => {
+                      Object.entries(updatedQuestion).forEach(([key, value]) => {
+                        if (value !== question[key]) {
+                          handleUpdate(key, value);
+                        }
+                      });
+                    }}
+                  />
+                </div>
+              );
+            }
+            return null;
+          })()}
 
         {/* Logic Section */}
         <LogicSection question={question} allQuestions={survey.questions} onUpdate={(expr) => handleUpdate("show_if", expr)} />
