@@ -19,7 +19,7 @@ from ..services.oauth import (
 )
 from .auth import create_access_token, hash_password, verify_password
 from ..schemas.user import RegisterRequest, LoginRequest
-from ..config import get_settings
+from ..config import get_settings, SoftwareMode
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 settings = get_settings()
@@ -35,6 +35,10 @@ async def register(
     db: AsyncSession = Depends(get_db)
 ):
     """Register a new user with email/password."""
+    # Block registration in admin_only mode
+    if settings.SOFTWARE_MODE == SoftwareMode.ADMIN_ONLY:
+        raise HTTPException(403, "Registration disabled in admin-only mode")
+    
     # Check if user exists
     result = await db.execute(select(User).where(User.email == request.email))
     if result.scalar_one_or_none():
@@ -158,6 +162,10 @@ async def get_or_create_oauth_user(
 @router.get("/google")
 async def google_login():
     """Redirect to Google OAuth consent screen."""
+    # Block OAuth in admin_only mode
+    if settings.SOFTWARE_MODE == SoftwareMode.ADMIN_ONLY:
+        raise HTTPException(403, "OAuth disabled in admin-only mode")
+    
     provider = get_google_provider()
     if not provider:
         raise HTTPException(400, "Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.")
@@ -208,6 +216,10 @@ async def google_callback(
 @router.get("/github")
 async def github_login():
     """Redirect to GitHub OAuth consent screen."""
+    # Block OAuth in admin_only mode
+    if settings.SOFTWARE_MODE == SoftwareMode.ADMIN_ONLY:
+        raise HTTPException(403, "OAuth disabled in admin-only mode")
+    
     provider = get_github_provider()
     if not provider:
         raise HTTPException(400, "GitHub OAuth not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.")

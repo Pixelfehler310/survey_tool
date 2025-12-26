@@ -1,10 +1,24 @@
 from pydantic_settings import BaseSettings
 from typing import List
 from functools import lru_cache
+from enum import Enum
+
+
+class SoftwareMode(str, Enum):
+    """
+    Software operation mode.
+    - admin_only: Single admin, no public registration (self-hosted)
+    - platform: Multi-user with registration and OAuth
+    """
+    ADMIN_ONLY = "admin_only"
+    PLATFORM = "platform"
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
+    
+    # Software Mode
+    SOFTWARE_MODE: SoftwareMode = SoftwareMode.ADMIN_ONLY
     
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./data/survey.db"

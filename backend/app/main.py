@@ -6,7 +6,7 @@ from slowapi.errors import RateLimitExceeded
 
 from .config import get_settings
 from .database import init_db
-from .routes import surveys, responses, admin, analytics, setup, events, oauth, app as app_router
+from .routes import surveys, responses, admin, analytics, setup, events, oauth, app as app_router, config as config_router
 from .rate_limit import limiter
 
 settings = get_settings()
@@ -60,6 +60,7 @@ app.include_router(admin.router, prefix="/api/v1/admin")
 app.include_router(analytics.router, prefix="/api/v1/admin")
 app.include_router(app_router.router, prefix="/api/v1")
 app.include_router(oauth.router, prefix="/api/v1")
+app.include_router(config_router.router, prefix="/api/v1")
 
 
 @app.get("/")

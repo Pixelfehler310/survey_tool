@@ -9,6 +9,7 @@ import ThankYou from "./pages/ThankYou";
 import { Dashboard, ResponseList, SurveyAnalytics, SurveyBuilder } from "./pages/app";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import Setup from "./pages/auth/Setup";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import useThemeStore from "./store/themeStore";
 
@@ -29,6 +30,7 @@ function App() {
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/setup" element={<Setup />} />
         <Route path="/auth/callback" element={<OAuthCallback />} />
 
         {/* App Routes (Protected) */}
