@@ -106,4 +106,4 @@ survey_tool/
 
 ## License
 
-GNU Affero General Public License v3.0 (AGPLv3)
+MIT
