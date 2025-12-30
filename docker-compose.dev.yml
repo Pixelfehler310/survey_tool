@@ -8,14 +8,16 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8010:8000"
     volumes:
       - ./backend:/app
       - ./surveys:/app/surveys
     environment:
       - DATABASE_URL=sqlite+aiosqlite:///./data/survey.db
       - JWT_SECRET_KEY=dev-secret-change-in-production
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:3010
       - SURVEYS_PATH=/app/surveys
+      - ADMIN_DASHBOARD_URL=http://localhost:3010/admin
+      - FRONTEND_URL=http://localhost:3010
       - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-}
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

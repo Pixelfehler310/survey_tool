@@ -16,12 +16,19 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown tasks."""
     # Validate JWT secret on startup (only enforce in production)
+    # Validate JWT secret on startup
     if not settings.JWT_SECRET_KEY:
-        import warnings
-        warnings.warn(
-            "JWT_SECRET_KEY not set. Using insecure default for development. "
-            "Set JWT_SECRET_KEY in production!"
-        )
+        if settings.SOFTWARE_MODE == "platform":
+            raise RuntimeError(
+                "CRITICAL SECURITY ERROR: JWT_SECRET_KEY is not set! "
+                "The application cannot start in platform mode without a secure secret."
+            )
+        else:
+            import warnings
+            warnings.warn(
+                "JWT_SECRET_KEY not set. Using insecure default for development. "
+                "Set JWT_SECRET_KEY in production!"
+            )
     
     # Startup: Schema is now managed by Alembic migrations
     # For fresh install or upgrade, run: cd backend && alembic upgrade head

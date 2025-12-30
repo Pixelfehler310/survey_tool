@@ -179,20 +179,52 @@ def get_github_provider() -> Optional[GitHubOAuthProvider]:
     )
 
 
-# State management (in production, consider using Redis with TTL)
-_oauth_states: Dict[str, str] = {}
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
+from datetime import datetime, timedelta
+from ..models.auth import AuthState
+
+# State management (Database backed)
+
+async def generate_state(db: AsyncSession, provider: str = None) -> str:
+    """
+    Generate a random state token and store it in the database.
+    Expires in 10 minutes.
+    """
+    state_token = secrets.token_urlsafe(32)
+    
+    # Store in DB
+    db_state = AuthState(
+        state=state_token,
+        provider=provider,
+        expires_at=datetime.utcnow() + timedelta(minutes=10)
+    )
+    db.add(db_state)
+    await db.commit()
+    
+    return state_token
 
 
-def generate_state() -> str:
-    """Generate a random state token for CSRF protection."""
-    state = secrets.token_urlsafe(32)
-    _oauth_states[state] = "pending"
-    return state
-
-
-def validate_state(state: str) -> bool:
-    """Validate and consume a state token."""
-    if state in _oauth_states:
-        del _oauth_states[state]
+async def validate_state(db: AsyncSession, state_token: str) -> bool:
+    """
+    Validate and consume a state token.
+    Checks existence and expiration, then deletes it (one-time use).
+    """
+    # Find active state
+    result = await db.execute(
+        select(AuthState).where(
+            AuthState.state == state_token,
+            AuthState.expires_at > datetime.utcnow()
+        )
+    )
+    stored_state = result.scalar_one_or_none()
+    
+    if stored_state:
+        # Consume (delete) the state
+        await db.delete(stored_state)
+        await db.commit()
         return True
+    
+    # Clean up expired states occasionally (could be a background task)
+    # For now, we'll just return False
     return False

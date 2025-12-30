@@ -33,7 +33,10 @@ class ResponseOut(BaseModel):
     meta: Dict[str, Any]
     started_at: Optional[datetime]
     completed_at: Optional[datetime]
+    completed_at: Optional[datetime]
     created_at: datetime
+    response_token: Optional[str] = None  # Signed token for partial updates
+
 
     class Config:
         from_attributes = True

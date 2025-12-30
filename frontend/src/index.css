@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@civic/design-system/css";
 
 /* Custom CSS variables for the survey theme */
 :root {

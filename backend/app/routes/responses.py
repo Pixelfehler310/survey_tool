@@ -16,6 +16,8 @@ from ..services.turnstile import verify_turnstile
 from ..services.webhooks import trigger_webhooks
 from ..config import get_settings
 from ..rate_limit import limiter
+from .surveys import load_survey_from_file
+
 
 router = APIRouter(tags=["responses"])
 
@@ -80,6 +82,35 @@ def load_survey_definition(survey_id: str) -> Optional[dict]:
 
 
 
+from jose import JWTError, jwt
+from .auth import require_admin, TokenData
+
+# ... (imports)
+
+def create_response_token(response_id: str) -> str:
+    """Create a signed token for response ownership (24h validity)."""
+    settings = get_settings()
+    expire = datetime.utcnow() + timedelta(hours=24)
+    to_encode = {
+        "sub": response_id,
+        "scope": "response:write",
+        "exp": expire
+    }
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+
+
+def verify_response_token(token: str, response_id: str) -> bool:
+    """Verify that the token authorizes writing to the given response ID."""
+    settings = get_settings()
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        if payload.get("sub") == response_id and payload.get("scope") == "response:write":
+            return True
+    except JWTError:
+        pass
+    return False
+
+
 @router.post("/responses", response_model=ResponseOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit("30/minute")
 async def create_response(
@@ -87,15 +118,7 @@ async def create_response(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Submit a completed survey response.
-    
-    - Stores answers and metadata
-    - Supports duplicate prevention via fingerprint
-    - Captures client metadata (user-agent, source, IP hash)
-    - Validates Turnstile CAPTCHA if configured
-    - Triggers webhooks if configured
-    """
+    # ... (existing duplicate check logic) ...
     # Verify Turnstile CAPTCHA if token provided
     if response_data.turnstile_token:
         client_ip = request.client.host if request.client else None
@@ -107,11 +130,16 @@ async def create_response(
             )
     
     # Load survey definition to check settings
-    survey_def = load_survey_definition(response_data.survey_id)
+    survey_def = load_survey_from_file(response_data.survey_id) # Fixed: use correct loader
+    # Or just use the one from surveys.py if imported, or keep local helper if it exists. 
+    # The file has load_survey_definition helper.
+    if not survey_def:
+         # Fallback to loading
+         survey_def = load_survey_definition(response_data.survey_id)
+
     settings_dict = survey_def.get("settings", {}) if survey_def else {}
     
     # Determine duplicate prevention mode
-    # Support both new 'duplicate_prevention' and legacy 'allow_multiple_responses'
     dup_mode = settings_dict.get("duplicate_prevention", "none")
     
     # Handle duplicate prevention based on mode
@@ -143,7 +171,6 @@ async def create_response(
     
     elif dup_mode == "client":
         # Client-side mode: only check fingerprint if provided (for compatibility)
-        # Main check happens in frontend via LocalStorage
         if response_data.fingerprint:
             fingerprint_hash = hash_fingerprint(response_data.fingerprint)
             existing = await db.execute(
@@ -157,8 +184,6 @@ async def create_response(
                     status_code=status.HTTP_409_CONFLICT,
                     detail="Response already submitted from this device"
                 )
-    
-    # mode == "none": No duplicate check
     
     # Enrich metadata with request info
     enriched_meta = extract_client_meta(request, response_data.meta or {})
@@ -178,7 +203,15 @@ async def create_response(
     await db.flush()
     await db.refresh(db_response)
     
-    # Trigger webhooks (async, fire-and-forget) - reuse survey_def from above
+    # Generate session token for updates
+    response_token = create_response_token(db_response.id)
+    
+    # Attach to response object for returning (not stored in DB)
+    # We need to monkey-patch or wrapper it because the DB model doesn't have this field
+    # But Pydantic 'from_attributes' will look for it.
+    setattr(db_response, "response_token", response_token)
+
+    # Trigger webhooks (async, fire-and-forget)
     if survey_def:
         await trigger_webhooks(
             survey_def,
@@ -216,13 +249,22 @@ async def create_response(
 async def update_partial_response(
     response_id: str,
     update_data: ResponsePartialUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db)
 ):
     """
     Update a partial response (save-and-continue functionality).
-    
-    Allows updating answers before final submission.
+    Requires 'Authorization: Bearer <response_token>' header.
     """
+    # Verify Authorization header
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Missing authentication token")
+    
+    token = auth_header.split(" ")[1]
+    if not verify_response_token(token, response_id):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid or expired session token")
+
     result = await db.execute(
         select(Response).where(Response.id == response_id)
     )
@@ -261,12 +303,12 @@ async def update_partial_response(
 @router.get("/responses/{response_id}", response_model=ResponseOut)
 async def get_response(
     response_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    admin: TokenData = Depends(require_admin)
 ):
     """
     Get a single response by ID.
-    
-    Useful for resuming a partial response.
+    Restricted to Admins only.
     """
     result = await db.execute(
         select(Response).where(Response.id == response_id)

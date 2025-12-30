@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    port: 3010,
     host: true,
     watch: {
       usePolling: true,
@@ -15,7 +16,7 @@ export default defineConfig({
         // Use 'backend' hostname in Docker, 'localhost' for local dev
         target: process.env.VITE_BACKEND_HOST
           ? `http://${process.env.VITE_BACKEND_HOST}:8000`
-          : 'http://localhost:8000',
+          : 'http://localhost:8010',
         changeOrigin: true,
       },
     },

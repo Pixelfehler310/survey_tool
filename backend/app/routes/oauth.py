@@ -160,7 +160,7 @@ async def get_or_create_oauth_user(
 # ============================================================================
 
 @router.get("/google")
-async def google_login():
+async def google_login(db: AsyncSession = Depends(get_db)):
     """Redirect to Google OAuth consent screen."""
     # Block OAuth in admin_only mode
     if settings.SOFTWARE_MODE == SoftwareMode.ADMIN_ONLY:
@@ -170,7 +170,7 @@ async def google_login():
     if not provider:
         raise HTTPException(400, "Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.")
     
-    state = generate_state()
+    state = await generate_state(db, provider="google")
     return RedirectResponse(provider.get_authorize_url(state))
 
 
@@ -181,7 +181,7 @@ async def google_callback(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle Google OAuth callback."""
-    if not validate_state(state):
+    if not await validate_state(db, state):
         raise HTTPException(400, "Invalid state parameter")
     
     provider = get_google_provider()
@@ -214,7 +214,7 @@ async def google_callback(
 # ============================================================================
 
 @router.get("/github")
-async def github_login():
+async def github_login(db: AsyncSession = Depends(get_db)):
     """Redirect to GitHub OAuth consent screen."""
     # Block OAuth in admin_only mode
     if settings.SOFTWARE_MODE == SoftwareMode.ADMIN_ONLY:
@@ -224,7 +224,7 @@ async def github_login():
     if not provider:
         raise HTTPException(400, "GitHub OAuth not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.")
     
-    state = generate_state()
+    state = await generate_state(db, provider="github")
     return RedirectResponse(provider.get_authorize_url(state))
 
 
@@ -235,7 +235,7 @@ async def github_callback(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle GitHub OAuth callback."""
-    if not validate_state(state):
+    if not await validate_state(db, state):
         raise HTTPException(400, "Invalid state parameter")
     
     provider = get_github_provider()
