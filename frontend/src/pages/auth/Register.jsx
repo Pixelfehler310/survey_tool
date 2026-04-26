@@ -51,7 +51,7 @@ export default function Register() {
       <div className="card max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold">Account erstellen</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">Starten Sie mit Survey Engine</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Starten Sie mit Survey Tool</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

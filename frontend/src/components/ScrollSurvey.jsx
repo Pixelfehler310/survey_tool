@@ -17,9 +17,10 @@ export default function ScrollSurvey({ survey, answers, setAnswer, revealedCount
   const isScrollAll = layout === "scroll-all";
   const isScrollReveal = layout === "scroll-reveal";
   const questionRefs = useRef({});
+  const questions = Array.isArray(survey.questions) ? survey.questions : [];
 
   // Get visible questions (respecting show_if logic)
-  const visibleQuestions = survey.questions.filter((q) => {
+  const visibleQuestions = questions.filter((q) => {
     if (q.type === "hidden") return false;
     if (!q.show_if) return true;
 
@@ -41,7 +42,7 @@ export default function ScrollSurvey({ survey, answers, setAnswer, revealedCount
 
   // Calculate progress
   const answeredCount = visibleQuestions.filter((q) => isAnswered(q.id)).length;
-  const progress = (answeredCount / visibleQuestions.length) * 100;
+  const progress = visibleQuestions.length > 0 ? (answeredCount / visibleQuestions.length) * 100 : 0;
 
   // Auto-reveal next question when current is answered (for scroll-reveal mode)
   useEffect(() => {

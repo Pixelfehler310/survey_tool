@@ -2,9 +2,13 @@ import json
 import random
 from pathlib import Path
 from typing import Optional
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
+from ..database import get_db
+from ..models.survey import Survey
 from ..schemas.survey import SurveyDefinition
 
 router = APIRouter(tags=["surveys"])
@@ -14,7 +18,7 @@ settings = get_settings()
 def load_survey_from_file(survey_id: str) -> Optional[dict]:
     """Load a survey definition from a JSON file (including subdirectories)."""
     surveys_path = Path(settings.SURVEYS_PATH)
-    
+
     # First, try direct path (surveys/{id}.json)
     survey_file = surveys_path / f"{survey_id}.json"
     if survey_file.exists():
@@ -23,7 +27,7 @@ def load_survey_from_file(survey_id: str) -> Optional[dict]:
                 return json.load(f)
         except json.JSONDecodeError:
             return None
-    
+
     # Search in subdirectories by filename or by id field
     for survey_file in surveys_path.glob("**/*.json"):
         try:
@@ -33,30 +37,47 @@ def load_survey_from_file(survey_id: str) -> Optional[dict]:
                     return data
         except json.JSONDecodeError:
             continue
-    
+
     return None
 
+
+async def load_survey_definition(survey_id: str, db: Optional[AsyncSession] = None) -> Optional[dict]:
+    """Load a survey definition from files first, then from active DB surveys."""
+    survey_data = load_survey_from_file(survey_id)
+    if survey_data:
+        return survey_data
+
+    if db is None:
+        return None
+
+    result = await db.execute(
+        select(Survey.definition).where(
+            Survey.id == survey_id,
+            Survey.is_active.is_(True)
+        )
+    )
+    return result.scalar_one_or_none()
 
 
 def select_variant(survey_data: dict) -> tuple[dict, Optional[str]]:
     """
     Select a variant from survey definition using weighted random selection.
-    
+
     Returns: (survey_definition, variant_id)
     """
     variants = survey_data.get("variants", [])
-    
+
     if not variants:
         # No variants, return original survey
         return survey_data, None
-    
+
     # Calculate total weight
     total_weight = sum(v.get("weight", 1) for v in variants)
-    
+
     # Random selection based on weights
     rand = random.uniform(0, total_weight)
     cumulative = 0
-    
+
     for variant in variants:
         weight = variant.get("weight", 1)
         cumulative += weight
@@ -70,7 +91,7 @@ def select_variant(survey_data: dict) -> tuple[dict, Optional[str]]:
             # Remove variants from response to avoid confusion
             variant_survey.pop("variants", None)
             return variant_survey, variant.get("id")
-    
+
     # Fallback to first variant
     first_variant = variants[0]
     variant_survey = {
@@ -83,25 +104,25 @@ def select_variant(survey_data: dict) -> tuple[dict, Optional[str]]:
 
 
 @router.get("/surveys/{survey_id}", response_model=SurveyDefinition)
-async def get_survey(survey_id: str):
+async def get_survey(survey_id: str, db: AsyncSession = Depends(get_db)):
     """
     Get a survey definition by ID.
-    
+
     Loads from static JSON files in the surveys directory.
     Supports A/B testing via variants - randomly selects a variant based on weights.
     Returns 404 if survey not found.
     """
-    survey_data = load_survey_from_file(survey_id)
-    
+    survey_data = await load_survey_definition(survey_id, db)
+
     if not survey_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Survey '{survey_id}' not found"
         )
-    
+
     # Select variant if available
     survey_definition, variant_id = select_variant(survey_data)
-    
+
     return survey_definition
 
 
@@ -109,12 +130,12 @@ async def get_survey(survey_id: str):
 async def list_surveys():
     """
     List all available surveys.
-    
+
     Returns a list of survey IDs and titles from the surveys directory.
     """
     surveys_path = Path(settings.SURVEYS_PATH)
     surveys = []
-    
+
     if surveys_path.exists():
         for survey_file in surveys_path.glob("**/*.json"):
             try:
@@ -127,5 +148,5 @@ async def list_surveys():
                     })
             except (json.JSONDecodeError, KeyError):
                 continue
-    
+
     return {"surveys": surveys}

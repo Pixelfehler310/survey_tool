@@ -7,6 +7,7 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import useAdminStore from "../../store/adminStore";
 import ThemeToggle from "../../components/ThemeToggle";
+import ShareButton from "../../components/ShareButton";
 
 const DATE_RANGE_OPTIONS = [
   { value: "all", label: "Alle Zeiträume" },
@@ -291,7 +292,7 @@ export default function SurveyAnalytics() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/app/dashboard" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-              Survey Engine
+              Survey Tool
             </Link>
             <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded">App</span>
           </div>
@@ -329,6 +330,19 @@ export default function SurveyAnalytics() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="flex items-end gap-2 mb-0.5">
+            <ShareButton url={`${window.location.origin}/survey/${selectedSurvey}`} />
+            <a
+              href={`${window.location.origin}/survey/${selectedSurvey}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium flex items-center gap-2"
+            >
+              <span>🚀</span>
+              <span>Öffnen</span>
+            </a>
           </div>
 
           {/* Custom Date Range */}

@@ -5,6 +5,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAdminStore from "../../store/adminStore";
 import ThemeToggle from "../../components/ThemeToggle";
+import ShareButton from "../../components/ShareButton";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ export default function Dashboard() {
       <header className="border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">Survey Engine</span>
+            <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">Survey Tool</span>
             <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded">Dashboard</span>
           </div>
           <div className="flex items-center gap-4">
@@ -178,46 +179,54 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {surveys.map((survey) => (
-              <Link key={survey.id} to={`/app/analytics/${survey.id}`} className="card hover:shadow-lg transition-all group">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-                    📊
+            {surveys.map((survey) => {
+              const surveyUrl = `${window.location.origin}/survey/${survey.id}`;
+
+              return (
+                <div key={survey.id} className="card hover:shadow-lg transition-all group flex flex-col">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                      📊
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${survey.is_active ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>
+                      {survey.is_active ? "Aktiv" : "Inaktiv"}
+                    </span>
                   </div>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${survey.is_active ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>
-                    {survey.is_active ? "Aktiv" : "Inaktiv"}
-                  </span>
-                </div>
 
-                <h3 className="font-bold text-lg mb-2 truncate" title={survey.title}>
-                  {survey.title}
-                </h3>
-                <p className="text-xs text-slate-500 mb-4 font-mono">{survey.id}</p>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <a
+                      href={surveyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-w-0 flex-1 font-bold text-lg truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                      title={survey.title}
+                    >
+                      {survey.title}
+                    </a>
+                    <ShareButton url={surveyUrl} iconOnly className="shrink-0" />
+                  </div>
+                  <p className="text-xs text-slate-500 mb-4 font-mono">{survey.id}</p>
 
-                <div className="flex items-center justify-between text-sm text-slate-500 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  <span>{new Date(survey.created_at || Date.now()).toLocaleDateString()}</span>
-                  <span>{survey.response_count || 0} Responses</span>
-                </div>
+                  <div className="flex items-center justify-between text-sm text-slate-500 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <span>{new Date(survey.created_at || Date.now()).toLocaleDateString()}</span>
+                    <span>{survey.response_count || 0} Responses</span>
+                  </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  <Link
-                    to={`/app/builder/${survey.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-1 px-3 py-2 text-center text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                  >
-                    ✏️ Bearbeiten
-                  </Link>
-                  <Link
-                    to={`/app/analytics/${survey.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-1 px-3 py-2 text-center text-sm border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    📊 Statistik
-                  </Link>
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <Link to={`/app/builder/${survey.id}`} className="flex-1 px-3 py-2 text-center text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                      ✏️ Bearbeiten
+                    </Link>
+                    <Link
+                      to={`/app/analytics/${survey.id}`}
+                      className="flex-1 px-3 py-2 text-center text-sm border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium"
+                    >
+                      📊 Statistik
+                    </Link>
+                  </div>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         )}
 
