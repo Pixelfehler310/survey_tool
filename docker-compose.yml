@@ -16,7 +16,8 @@ services:
       - SURVEYS_PATH=/app/surveys
       - ADMIN_DASHBOARD_URL=http://localhost:3010/admin
       - FRONTEND_URL=http://localhost:3010
-    command: sh -c "python -m alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: sh -c "python -m alembic upgrade head && uvicorn app.main:app --host
+      0.0.0.0 --port 8000 --reload"
 
   frontend:
     build:
@@ -32,10 +33,15 @@ services:
       - VITE_API_URL=http://localhost:8010
       - VITE_BACKEND_HOST=backend
       - VITE_TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY:-}
+      - VITE_USE_POLLING=false
     depends_on:
       - backend
-    command: sh -c "pnpm install && pnpm run dev -- --host 0.0.0.0 --port 3000"
-
+    command: pnpm run dev -- --host 0.0.0.0 --port 3000
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
   # PostgreSQL for production-like testing (optional)
   # db:
   #   image: postgres:15-alpine

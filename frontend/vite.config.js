@@ -9,7 +9,7 @@ export default defineConfig({
     port: 3000,
     host: true,
     watch: {
-      usePolling: true,
+      usePolling: !!process.env.VITE_USE_POLLING,
     },
     proxy: {
       '/api': {
