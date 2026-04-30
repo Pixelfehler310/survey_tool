@@ -15,6 +15,22 @@ JSON structure reference for survey definitions.
     "layout": "paged",
     "captcha": false,
     "duplicate_prevention": "client",
+    "fun_mode": {
+      "enabled": true,
+      "participant_toggle": true,
+      "typewriter": {
+        "preset": "normal",
+        "characters_per_second": 35,
+        "skip_on_click": true,
+        "answers_after_reveal": true
+      },
+      "character": {
+        "preset": "default_host",
+        "default_expression": "friendly",
+        "answer_reaction": "happy_bounce",
+        "completion_animation": "celebrate"
+      }
+    },
     "thank_you": {
       "title": "Vielen Dank!",
       "message": "Ihre Antworten wurden gespeichert.",
@@ -68,7 +84,37 @@ JSON structure reference for survey definitions.
 | `layout`               | string  | `"paged"` | `paged`, `scroll-reveal`, `scroll-all` |
 | `captcha`              | boolean | `false`   | Enable Turnstile CAPTCHA               |
 | `duplicate_prevention` | string  | `"none"`  | `none`, `client`, `server`             |
+| `fun_mode`             | object  |           | Game-style dialogue presentation       |
 | `thank_you`            | object  |           | Thank you page config                  |
+
+### Fun Mode Object
+
+Fun Mode is only active when `layout` is `paged`. It changes the survey presentation, not the answer data format.
+
+| Field                | Type    | Default | Description                                      |
+| -------------------- | ------- | ------- | ------------------------------------------------ |
+| `enabled`            | boolean | `false` | Enable Fun Mode for paged surveys                |
+| `participant_toggle` | boolean | `true`  | Allow participants to return to normal paged UI  |
+| `typewriter`         | object  |         | Dialogue text reveal behavior                    |
+| `character`          | object  |         | Character preset and animation names             |
+
+### Fun Mode Typewriter Object
+
+| Field                   | Type    | Default    | Description                                 |
+| ----------------------- | ------- | ---------- | ------------------------------------------- |
+| `preset`                | string  | `normal`   | `slow`, `normal`, or `fast`                 |
+| `characters_per_second` | number  | `35`       | Static reveal speed                         |
+| `skip_on_click`         | boolean | `true`     | Click/tap dialogue to reveal all text       |
+| `answers_after_reveal`  | boolean | `true`     | Show answer controls after text is revealed |
+
+### Fun Mode Character Object
+
+| Field                  | Type   | Default        | Description                                |
+| ---------------------- | ------ | -------------- | ------------------------------------------ |
+| `preset`               | string | `default_host` | Character preset id                        |
+| `default_expression`   | string | `friendly`     | Stored expression name                     |
+| `answer_reaction`      | string | `happy_bounce` | Answer-change animation, or `none`         |
+| `completion_animation` | string | `celebrate`    | Completion animation name for future flows |
 
 ### Thank You Object
 

@@ -10,8 +10,11 @@ services:
     ports:
       - "8010:8000"
     volumes:
-      - ./backend:/app
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini
       - ./surveys:/app/surveys
+      - backend_data:/app/data
     environment:
       - DATABASE_URL=sqlite+aiosqlite:///./data/survey.db
       - JWT_SECRET_KEY=dev-secret-change-in-production
@@ -20,4 +23,7 @@ services:
       - ADMIN_DASHBOARD_URL=http://localhost:3010/admin
       - FRONTEND_URL=http://localhost:3010
       - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-}
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app --reload-exclude '*.db*'
+
+volumes:
+  backend_data:

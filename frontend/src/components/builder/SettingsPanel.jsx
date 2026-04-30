@@ -5,7 +5,13 @@
 import React, { useState } from "react";
 import useBuilderStore from "../../store/builderStore";
 
-function SettingToggle({ label, description, value, onChange }) {
+const TYPEWRITER_PRESETS = {
+  slow: 22,
+  normal: 35,
+  fast: 55,
+};
+
+function SettingToggle({ label, description, value, onChange, disabled = false }) {
   return (
     <div className="flex items-start justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
       <div>
@@ -14,9 +20,11 @@ function SettingToggle({ label, description, value, onChange }) {
       </div>
       <button
         onClick={() => onChange(!value)}
+        disabled={disabled}
         className={`
           relative w-11 h-6 rounded-full transition-colors shrink-0 ml-4
           ${value ? "bg-indigo-600" : "bg-slate-300 dark:bg-slate-600"}
+          ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         `}
       >
         <span
@@ -38,9 +46,37 @@ export default function SettingsPanel({ isOpen, onClose }) {
 
   const tabs = [
     { id: "general", label: "Allgemein", icon: "⚙️" },
+    { id: "funmode", label: "Fun Mode", icon: "✨" },
     { id: "branding", label: "Branding", icon: "🎨" },
     { id: "thankyou", label: "Dankeseite", icon: "🎉" },
   ];
+
+  const funMode = survey.settings?.fun_mode || {};
+  const typewriter = funMode.typewriter || {};
+  const character = funMode.character || {};
+  const isPagedLayout = (survey.settings?.layout || "paged") === "paged";
+
+  const updateFunMode = (updates) => {
+    setSettings({ fun_mode: { ...funMode, ...updates } });
+  };
+
+  const updateTypewriter = (updates) => {
+    setSettings({
+      fun_mode: {
+        ...funMode,
+        typewriter: { ...typewriter, ...updates },
+      },
+    });
+  };
+
+  const updateCharacter = (updates) => {
+    setSettings({
+      fun_mode: {
+        ...funMode,
+        character: { ...character, ...updates },
+      },
+    });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -134,6 +170,129 @@ export default function SettingsPanel({ isOpen, onClose }) {
                   {(!survey.settings?.layout || survey.settings?.layout === "paged") && "Klassische Umfrage mit einer Frage pro Seite."}
                 </p>
               </div>
+            </div>
+          )}
+
+          {activeTab === "funmode" && (
+            <div className="space-y-4">
+              {!isPagedLayout && (
+                <div className="p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 text-sm text-amber-700 dark:text-amber-300">
+                  Fun Mode ist nur im Layout-Modus "Seitenweise" aktiv. Stelle den Layout-Modus auf "paged", um ihn für Teilnehmer zu verwenden.
+                </div>
+              )}
+
+              <div>
+                <SettingToggle
+                  label="Fun Mode aktivieren"
+                  description="Rendert die paged Umfrage als spielartige Dialogszene"
+                  value={funMode.enabled ?? false}
+                  disabled={!isPagedLayout}
+                  onChange={(v) => updateFunMode({ enabled: v })}
+                />
+                <SettingToggle
+                  label="Teilnehmer können ausschalten"
+                  description="Zeigt einen kompakten Button, der zurück zur normalen paged Ansicht wechselt"
+                  value={funMode.participant_toggle ?? true}
+                  onChange={(v) => updateFunMode({ participant_toggle: v })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Texttempo</label>
+                  <select
+                    value={typewriter.preset || "normal"}
+                    onChange={(e) => updateTypewriter({ preset: e.target.value, characters_per_second: TYPEWRITER_PRESETS[e.target.value] })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  >
+                    <option value="slow">Langsam</option>
+                    <option value="normal">Normal</option>
+                    <option value="fast">Schnell</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Zeichen pro Sekunde</label>
+                  <input
+                    type="number"
+                    min="5"
+                    max="120"
+                    value={typewriter.characters_per_second ?? TYPEWRITER_PRESETS[typewriter.preset || "normal"]}
+                    onChange={(e) => updateTypewriter({ characters_per_second: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <SettingToggle
+                  label="Klick zeigt ganzen Text"
+                  description="Teilnehmer können die Typewriter-Animation überspringen"
+                  value={typewriter.skip_on_click ?? true}
+                  onChange={(v) => updateTypewriter({ skip_on_click: v })}
+                />
+                <SettingToggle
+                  label="Antworten erst nach Text"
+                  description="Antwortcontrols erscheinen erst nach vollständiger Dialogzeile"
+                  value={typewriter.answers_after_reveal ?? true}
+                  onChange={(v) => updateTypewriter({ answers_after_reveal: v })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Charakter</label>
+                  <select
+                    value={character.preset || "default_host"}
+                    onChange={(e) => updateCharacter({ preset: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  >
+                    <option value="default_host">Default Host</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Standardausdruck</label>
+                  <select
+                    value={character.default_expression || "friendly"}
+                    onChange={(e) => updateCharacter({ default_expression: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  >
+                    <option value="friendly">Friendly</option>
+                    <option value="curious">Curious</option>
+                    <option value="thinking">Thinking</option>
+                    <option value="happy">Happy</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Antwortreaktion</label>
+                  <select
+                    value={character.answer_reaction || "happy_bounce"}
+                    onChange={(e) => updateCharacter({ answer_reaction: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  >
+                    <option value="happy_bounce">Happy Bounce</option>
+                    <option value="none">Keine</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Endanimation</label>
+                  <select
+                    value={character.completion_animation || "celebrate"}
+                    onChange={(e) => updateCharacter({ completion_animation: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  >
+                    <option value="celebrate">Celebrate</option>
+                    <option value="none">Keine</option>
+                  </select>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500">
+                Ausdrucke und Endanimationen werden als JSON-Konfiguration gespeichert. Die erste Implementierung nutzt den Default Host und einfache CSS-Animationen.
+              </p>
             </div>
           )}
 

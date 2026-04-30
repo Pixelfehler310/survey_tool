@@ -60,10 +60,18 @@ def upgrade() -> None:
         batch_op.add_column(sa.Column('slug', sa.String(length=100), nullable=True))
         batch_op.add_column(sa.Column('user_id', sa.String(length=36), nullable=True))  # Nullable for existing data
         
-        batch_op.alter_column('is_active',
-               existing_type=sa.VARCHAR(length=5),
-               type_=sa.Boolean(),
-               existing_nullable=True)
+        # Determine dialect for conditional casting
+        bind = op.get_bind()
+        dialect = bind.dialect.name
+        
+        if dialect == 'postgresql':
+            # PostgreSQL needs explicit cast for boolean
+            op.execute("ALTER TABLE surveys ALTER COLUMN is_active TYPE BOOLEAN USING (CASE WHEN is_active = 'true' THEN TRUE ELSE FALSE END)")
+        else:
+            batch_op.alter_column('is_active',
+                   existing_type=sa.VARCHAR(length=5),
+                   type_=sa.Boolean(),
+                   existing_nullable=True)
         
         batch_op.create_index(batch_op.f('ix_surveys_slug'), ['slug'], unique=True)
         batch_op.create_index(batch_op.f('ix_surveys_user_id'), ['user_id'], unique=False)

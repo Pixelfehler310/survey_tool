@@ -18,7 +18,7 @@ const QUESTION_COMPONENTS = {
   hidden: () => null, // Hidden fields are not rendered
 };
 
-export default function Question({ question, value, onChange, error }) {
+export default function Question({ question, value, onChange, error, showPrompt = true, showDescription = true }) {
   // Check for plugin renderer first
   const PluginRenderer = isPluginType(question.type) ? getPluginRenderer(question.type) : null;
   const QuestionComponent = PluginRenderer || QUESTION_COMPONENTS[question.type];
@@ -30,16 +30,19 @@ export default function Question({ question, value, onChange, error }) {
   return (
     <div className="animate-fade-in">
       {/* Question text */}
-      <h2 className="text-xl md:text-2xl font-semibold mb-2">
-        {question.text}
-        {question.required && <span className="text-red-500 ml-1">*</span>}
-      </h2>
+      {showPrompt && (
+        <h2 className="text-xl md:text-2xl font-semibold mb-2">
+          {question.text}
+          {question.required && <span className="text-red-500 ml-1">*</span>}
+        </h2>
+      )}
 
       {/* Helper text */}
-      {question.description && <p className="text-slate-500 dark:text-slate-400 mb-6">{question.description}</p>}
+      {showDescription && question.description && <p className="text-slate-500 dark:text-slate-400 mb-6">{question.description}</p>}
 
       {/* Question component */}
       <div className="mt-6">
+        {/* eslint-disable-next-line react-hooks/static-components -- plugin renderers are intentionally dynamic. */}
         <QuestionComponent question={question} value={value} onChange={onChange} />
       </div>
 

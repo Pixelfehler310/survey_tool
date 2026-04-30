@@ -168,6 +168,25 @@ Click ⚙️ **Einstellungen** in the header.
 | Duplikat-Prävention | none / client / server                 |
 | Layout-Modus        | paged / scroll-reveal / scroll-all     |
 
+### Fun Mode Tab
+
+Fun Mode is an alternate game-style presentation for paged surveys. It uses the same questions, validation, and submission flow as the normal paged layout.
+
+| Setting                       | Description                                      |
+| ----------------------------- | ------------------------------------------------ |
+| Fun Mode aktivieren           | Enables the dialogue scene when layout is paged  |
+| Teilnehmer können ausschalten | Adds a participant control to return to paged UI |
+| Texttempo                     | slow / normal / fast typewriter preset           |
+| Zeichen pro Sekunde           | Numeric typewriter speed stored in JSON          |
+| Klick zeigt ganzen Text       | Click/tap dialogue box to reveal full text       |
+| Antworten erst nach Text      | Shows answer controls after text reveal          |
+| Charakter                     | Character preset id                              |
+| Standardausdruck              | Stored expression name for the character         |
+| Antwortreaktion               | Animation after answers change                   |
+| Endanimation                  | Stored completion animation name                 |
+
+Fun Mode is only active when **Layout-Modus** is `paged`. If the layout is `scroll-reveal` or `scroll-all`, the survey uses the selected scroll layout instead.
+
 ### Branding Tab
 
 | Setting     | Description          |
@@ -197,6 +216,7 @@ Click 👁️ **Vorschau** in the header.
 - Device toggle: Desktop / Tablet / Mobile
 - Answers not submitted (preview mode)
 - Shows "Vorschau-Modus" badge
+- Expands the desktop/tablet frame when Fun Mode is enabled
 
 ### Device Widths
 
@@ -215,6 +235,7 @@ Click 👁️ **Vorschau** in the header.
 - One question per screen
 - Next/Back buttons
 - Classic survey experience
+- Supports optional Fun Mode presentation
 
 ### Scroll Reveal
 

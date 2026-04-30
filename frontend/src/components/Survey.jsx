@@ -8,6 +8,7 @@ import ThemeToggle from "./ThemeToggle";
 import Turnstile from "./Turnstile";
 import useBranding from "../hooks/useBranding";
 import ScrollSurvey from "./ScrollSurvey";
+import FunModeSurvey from "./fun/FunModeSurvey";
 
 export default function Survey({ surveyId: propSurveyId, previewDefinition, isPreview = false }) {
   const { surveyId: paramSurveyId } = useParams();
@@ -20,6 +21,7 @@ export default function Survey({ surveyId: propSurveyId, previewDefinition, isPr
   const [submittedSurvey, setSubmittedSurvey] = useState(null);
   const [countdown, setCountdown] = useState(0);
   const [revealedCount, setRevealedCount] = useState(1); // For scroll-reveal mode
+  const [funModeDisabled, setFunModeDisabled] = useState(false);
 
   // Session ID for event tracking (drop-off analysis)
   const sessionIdRef = useRef(crypto.randomUUID());
@@ -41,7 +43,7 @@ export default function Survey({ surveyId: propSurveyId, previewDefinition, isPr
           }),
           keepalive: true, // Ensures request completes even if tab closes
         });
-      } catch (e) {
+      } catch {
         // Silently fail - tracking should not break the survey
       }
     },
@@ -101,6 +103,10 @@ export default function Survey({ surveyId: propSurveyId, previewDefinition, isPr
       localStorage.setItem(getStorageKey(), Date.now().toString());
     }
   };
+
+  useEffect(() => {
+    setFunModeDisabled(false);
+  }, [surveyId]);
 
   // Load survey on mount
   useEffect(() => {
@@ -174,6 +180,10 @@ export default function Survey({ surveyId: propSurveyId, previewDefinition, isPr
   const handleSubmit = async () => {
     // Validate last question
     if (!goToNext() && !isLastQuestion()) {
+      return;
+    }
+
+    if (isPreview) {
       return;
     }
 
@@ -327,7 +337,7 @@ export default function Survey({ surveyId: propSurveyId, previewDefinition, isPr
   if (isSubmitted) {
     // Use submittedSurvey since survey is reset to null after submission
     const thankYouConfig = submittedSurvey?.settings?.thank_you || {};
-    const { title = "Vielen Dank!", message = "Deine Antworten wurden erfolgreich übermittelt.", cta_text, cta_url, redirect_delay } = thankYouConfig;
+    const { title = "Vielen Dank!", message = "Deine Antworten wurden erfolgreich übermittelt.", cta_text, cta_url } = thankYouConfig;
 
     return (
       <div className="min-h-screen flex items-center justify-center px-4 transition-colors duration-300">
@@ -390,6 +400,31 @@ export default function Survey({ surveyId: propSurveyId, previewDefinition, isPr
   const currentAnswer = getCurrentAnswer();
   const progress = getProgress();
   const showProgress = survey.settings?.show_progress !== false;
+  const isFunModeActive = survey.settings?.fun_mode?.enabled === true && !funModeDisabled;
+
+  if (isFunModeActive) {
+    return (
+      <FunModeSurvey
+        survey={survey}
+        currentQuestion={currentQuestion}
+        currentAnswer={currentAnswer}
+        progress={progress}
+        showProgress={showProgress}
+        validationError={validationError}
+        error={error}
+        isSubmitting={isSubmitting}
+        isLastQuestion={isLastQuestion()}
+        canGoBack={canGoBack()}
+        goToPrevious={goToPrevious}
+        onAnswerChange={(value) => currentQuestion && setAnswer(currentQuestion.id, value)}
+        onNext={handleNext}
+        onDisableFunMode={() => setFunModeDisabled(true)}
+        turnstileToken={turnstileToken}
+        setTurnstileToken={setTurnstileToken}
+        isPreview={isPreview}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen py-8 px-4 transition-colors duration-300">

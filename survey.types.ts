@@ -320,6 +320,54 @@ export interface BrandingConfig {
  */
 export type DuplicatePreventionMode = "none" | "client" | "server";
 
+/** Survey rendering layout mode. */
+export type SurveyLayoutMode = "paged" | "scroll-reveal" | "scroll-all";
+
+/** Typewriter configuration for Fun Mode dialogue text. */
+export interface FunModeTypewriterConfig {
+  /** Builder preset used to populate the numeric speed. */
+  preset?: "slow" | "normal" | "fast";
+
+  /** Static reveal speed for question text. */
+  characters_per_second?: number;
+
+  /** Allow participants to click/tap the dialogue box to reveal all text. */
+  skip_on_click?: boolean;
+
+  /** Hide answer controls until the dialogue text is fully revealed. */
+  answers_after_reveal?: boolean;
+}
+
+/** Character preset and animation configuration for Fun Mode. */
+export interface FunModeCharacterConfig {
+  /** Code-defined character preset id. */
+  preset?: "default_host" | string;
+
+  /** Named expression stored for current and future character presets. */
+  default_expression?: "friendly" | "curious" | "thinking" | "happy" | string;
+
+  /** Named reaction after an answer changes. */
+  answer_reaction?: "happy_bounce" | "none" | string;
+
+  /** Named completion animation for future completion screens. */
+  completion_animation?: "celebrate" | "none" | string;
+}
+
+/** Fun Mode alternate presentation for paged surveys. */
+export interface FunModeConfig {
+  /** Enable game-style dialogue presentation when layout is paged. */
+  enabled?: boolean;
+
+  /** Let participants switch back to normal paged mode. */
+  participant_toggle?: boolean;
+
+  /** Dialogue reveal settings. */
+  typewriter?: FunModeTypewriterConfig;
+
+  /** Character preset and animation settings. */
+  character?: FunModeCharacterConfig;
+}
+
 // =============================================================================
 // SURVEY SETTINGS
 // =============================================================================
@@ -398,6 +446,12 @@ export interface SurveySettings {
    * Legacy flag for multiple response allowance.
    */
   allow_multiple_responses?: boolean;
+
+  /** Layout renderer for the survey. */
+  layout?: SurveyLayoutMode;
+
+  /** Optional game-style dialogue presentation for paged surveys. */
+  fun_mode?: FunModeConfig;
 
   /** Custom thank-you page configuration */
   thank_you?: ThankYouConfig;

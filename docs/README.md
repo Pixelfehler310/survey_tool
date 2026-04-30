@@ -22,6 +22,10 @@ Open-source survey platform with no-code builder and plugin system.
 | [📋 Survey Schema](./08-survey-schema.md) | JSON structure      |
 | [📊 Analytics](./09-analytics.md)         | Dashboard & exports |
 
+| Design Notes                                      |                       |
+| ------------------------------------------------- | --------------------- |
+| [Fun Mode Requirements](./fun-mode-requirements.md) | Game-style survey UI |
+
 | Operations                          |                  |
 | ----------------------------------- | ---------------- |
 | [🚢 Deployment](./10-deployment.md) | Production setup |
